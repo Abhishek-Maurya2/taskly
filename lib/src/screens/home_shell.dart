@@ -59,12 +59,13 @@ class HomeShell extends StatelessWidget {
                               'assets/images/avatar.jpg',
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
-                              errorBuilder: (context, error, stackTrace) => Icon(
-                                Icons.person,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
                             ),
                           ),
                         ),
@@ -435,7 +436,10 @@ List<Widget> _buildTaskTiles(
       SettingExpandableListTile(
         icon: InkResponse(
           radius: 22,
-          onTap: () async => store.toggleCompletion(task),
+          onTap: () async {
+            HapticFeedback.selectionClick();
+            await store.toggleCompletion(task);
+          },
           child: Icon(
             !completed ? Icons.circle_outlined : Icons.check,
             color: completed ? colorScheme.primary : colorScheme.onSurface,
@@ -453,7 +457,10 @@ List<Widget> _buildTaskTiles(
         trailing: IconButton(
           icon: Icon(task.starred ? Icons.star : Icons.star_border),
           tooltip: task.starred ? 'Unstar task' : 'Star task',
-          onPressed: () => store.toggleStar(task),
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            store.toggleStar(task);
+          },
         ),
         onTap: () => _openTaskEditor(context, task),
         subItems: subTiles,

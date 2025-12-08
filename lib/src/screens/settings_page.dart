@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../services/notification_service.dart';
@@ -28,7 +29,10 @@ class _SettingsPageState extends State<SettingsPage> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, size: 24),
               tooltip: 'Back',
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.of(context).maybePop();
+              },
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(
                   context,

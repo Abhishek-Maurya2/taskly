@@ -87,7 +87,10 @@ class TaskTile extends StatelessWidget {
           ),
           trailing: IconButton(
             icon: Icon(task.starred ? Icons.star : Icons.star_border),
-            onPressed: () => store.toggleStar(task),
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              store.toggleStar(task);
+            },
           ),
         ),
       ),

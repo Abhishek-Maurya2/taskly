@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/task_models.dart';
@@ -38,7 +39,10 @@ class _TabManagementPageState extends State<TabManagementPage> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, size: 24),
               tooltip: 'Back',
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.of(context).maybePop();
+              },
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(
                   context,
@@ -77,6 +81,7 @@ class _TabManagementPageState extends State<TabManagementPage> {
                       ),
                       tooltip: list.starred ? 'Unfavorite' : 'Favorite',
                       onPressed: () async {
+                        HapticFeedback.selectionClick();
                         final updated = list.copyWith(starred: !list.starred);
                         await store.updateList(updated);
                       },

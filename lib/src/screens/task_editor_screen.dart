@@ -66,7 +66,10 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, size: 24),
               tooltip: 'Back',
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.of(context).maybePop();
+              },
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(
                   context,
@@ -77,7 +80,10 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               IconButton(
                 icon: Icon(_starred ? Icons.star : Icons.star_border),
                 tooltip: _starred ? 'Unstar' : 'Star',
-                onPressed: () => setState(() => _starred = !_starred),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _starred = !_starred);
+                },
               ),
               SizedBox(width: 8),
               IconButton(
@@ -86,7 +92,12 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                   color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
                 tooltip: isEditing ? 'Save' : 'Add',
-                onPressed: _saving ? null : _save,
+                onPressed: _saving
+                    ? null
+                    : () {
+                        HapticFeedback.lightImpact();
+                        _save();
+                      },
                 style: IconButton.styleFrom(
                   backgroundColor: Theme.of(
                     context,
