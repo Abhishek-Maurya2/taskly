@@ -6,7 +6,7 @@ import 'package:settings_tiles/settings_tiles.dart';
 
 import '../models/task_models.dart';
 import '../state/task_store.dart';
-import '../widgets/task_editor_sheet.dart';
+import 'task_editor_screen.dart';
 import 'settings_page.dart';
 
 class HomeShell extends StatelessWidget {
@@ -110,6 +110,7 @@ class HomeShell extends StatelessWidget {
           onPressed: () => _openEditor(context),
           label: const Text('Add task'),
           icon: const Icon(Icons.add),
+          isExtended: true,
         ),
       ),
     );
@@ -150,12 +151,8 @@ class HomeShell extends StatelessWidget {
 
   Future<void> _openEditor(BuildContext context, {TaskModel? existing}) async {
     HapticFeedback.lightImpact();
-    await showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => TaskEditorSheet(existing: existing),
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => TaskEditorScreen(existing: existing)),
     );
   }
 }
@@ -294,13 +291,9 @@ String _dueLabel(DateTime date) {
 }
 
 Future<void> _openTaskEditor(BuildContext context, TaskModel task) {
-  return showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (_) => TaskEditorSheet(existing: task),
-  );
+  return Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => TaskEditorScreen(existing: task)));
 }
 
 List<Widget> _buildTaskTiles(

@@ -46,8 +46,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               tooltip: 'Back',
               onPressed: () => Navigator.of(context).maybePop(),
               style: IconButton.styleFrom(
-                backgroundColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
                 fixedSize: Size(20, 50),
               ),
             ),

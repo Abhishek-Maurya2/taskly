@@ -40,7 +40,9 @@ class _TabManagementPageState extends State<TabManagementPage> {
               tooltip: 'Back',
               onPressed: () => Navigator.of(context).maybePop(),
               style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
                 fixedSize: Size(20, 50),
               ),
             ),
