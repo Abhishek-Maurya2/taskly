@@ -15,7 +15,7 @@ class SettingsPage extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('settings'),
+            title: const Text('Settings'),
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
@@ -32,8 +32,8 @@ class SettingsPage extends StatelessWidget {
                         isLight ? Color(0xfff8e287) : Color(0xff534600),
                         isLight ? Color(0xff534600) : Color(0xfff8e287),
                       ),
-                      title: const Text("appearance"),
-                      description: const Text("appearance_sub"),
+                      title: const Text("Appearance"),
+                      description: const Text("Appearance Sub"),
                       onTap: () async {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -44,6 +44,7 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: 10),
                 SettingSection(
                   styleTile: true,
                   title: const SettingSectionTitle(
@@ -52,8 +53,10 @@ class SettingsPage extends StatelessWidget {
                   ),
                   tiles: [
                     SettingActionTile(
-                      icon: const SettingTileIcon(
-                        Icons.notifications_active_outlined,
+                      icon: iconContainer(
+                        Symbols.notifications_active_rounded,
+                        isLight ? Color(0xffffdcc5) : Color(0xff6d390b),
+                        isLight ? Color(0xff6d390b) : Color(0xffffdcc5),
                       ),
                       title: const Text('Clear scheduled notifications'),
                       description: const Text('Cancel all pending reminders.'),
@@ -66,9 +69,13 @@ class SettingsPage extends StatelessWidget {
                 SettingSection(
                   styleTile: true,
                   title: const SettingSectionTitle('Info', noPadding: true),
-                  tiles: const [
+                  tiles: [
                     SettingTextTile(
-                      icon: SettingTileIcon(Icons.info_outline),
+                      icon: iconContainer(
+                        Symbols.info,
+                        isLight ? Color(0xffe6deff) : Color(0xff493e76),
+                        isLight ? Color(0xff493e76) : Color(0xffe6deff),
+                      ),
                       title: Text('Expressive layout'),
                       description: Text(
                         'Settings now use Material 3 styled tiles.',

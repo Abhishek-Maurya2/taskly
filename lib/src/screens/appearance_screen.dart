@@ -5,7 +5,6 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../notifiers/unit_settings_notifier.dart';
 import 'package:provider/provider.dart';
 import '../utils/theme_controller.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:restart_app/restart_app.dart';
 import '../utils/snack_util.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
@@ -32,9 +31,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     final optionsTheme = {
-      "Auto": "theme_auto".tr(),
-      "Dark": "theme_dark".tr(),
-      "Light": "theme_light".tr(),
+      "Auto": "Auto",
+      "Dark": "Dark",
+      "Light": "Light",
     };
 
     return Scaffold(
@@ -42,7 +41,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text('appearance'.tr()),
+            title: const Text('Appearance'),
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
@@ -52,12 +51,12 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               children: [
                 SettingSection(
                   styleTile: true,
-                  title: SettingSectionTitle("app_looks".tr(), noPadding: true),
+                  title: const SettingSectionTitle('Appearance', noPadding: true),
                   tiles: [
                     SettingSingleOptionTile(
                       icon: Icon(Symbols.routine),
-                      title: Text('app_theme_dark_light'.tr()),
-                      dialogTitle: 'app_theme_dark_light'.tr(),
+                      title: const Text('Theme mode'),
+                      dialogTitle: 'Theme mode',
                       value: SettingTileValue(
                         optionsTheme[currentMode == ThemeMode.light
                             ? "Light"
@@ -170,7 +169,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                                                         ).pop();
                                                       },
                                                       child: Text(
-                                                        'cancel'.tr(),
+                                                        'Cancel',
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
@@ -200,7 +199,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                                                         });
                                                       },
                                                       child: Text(
-                                                        'save'.tr(),
+                                                        'Save',
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
@@ -235,7 +234,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                               ),
                             )
                           : Icon(Symbols.colorize, fill: 1, weight: 500),
-                      title: Text("use_custom_color".tr()),
+                      title: const Text("Use custom color"),
                       toggled:
                           PreferencesHelper.getBool("usingCustomSeed") ?? false,
                       onChanged: (value) {
@@ -266,7 +265,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     ),
                     SettingSwitchTile(
                       icon: Icon(Symbols.brush, fill: 1, weight: 500),
-                      title: Text('use_expressive_palette'.tr()),
+                      title: const Text('Use expressive palette'),
                       toggled:
                           PreferencesHelper.getBool("useExpressiveVariant") ??
                           false,
@@ -284,9 +283,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                                 : true
                           : false,
                       icon: Icon(Symbols.wallpaper, fill: 1, weight: 500),
-                      title: Text("dynamic_colors".tr()),
+                      title: const Text("Dynamic colors"),
                       description: Text(
-                        "${"dynamic_colors_sub".tr()} ${isSupported ? "" : "(Android 12+)"}",
+                        "Use system wallpaper colors${isSupported ? "" : " (Android 12+)"}",
                       ),
                       toggled:
                           PreferencesHelper.getBool("DynamicColors") ?? false,
@@ -317,8 +316,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     ),
                     SettingSwitchTile(
                       icon: Icon(Symbols.palette, fill: 1, weight: 500),
-                      title: Text("material_scheme_only".tr()),
-                      description: Text('material_scheme_only_sub'.tr()),
+                      title: const Text("Material scheme only"),
+                      description: const Text('Force Material seed scheme even with palette'),
                       toggled:
                           PreferencesHelper.getBool("OnlyMaterialScheme") ??
                           false,
@@ -327,7 +326,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                         setState(() {
                           SnackUtil.showSnackBar(
                             context: context,
-                            message: "restart_for_changes".tr(),
+                            message: "Restart required to apply changes",
                             actionLabel: "Restart",
                             duration: Duration(seconds: 30),
                             onActionPressed: () {
