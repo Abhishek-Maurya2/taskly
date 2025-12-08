@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:settings_tiles/settings_tiles.dart';
 
 import '../models/task_models.dart';
 import '../state/task_store.dart';
 import '../widgets/task_editor_sheet.dart';
-import '../widgets/task_tile.dart';
 import 'settings_page.dart';
 
 class HomeShell extends StatelessWidget {
@@ -15,69 +15,87 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<TaskStore>();
     final lists = store.lists;
+    if (lists.isEmpty) {
+      return const Scaffold(body: _EmptyState());
+    }
+
     final activeId =
         store.activeListId ?? (lists.isNotEmpty ? lists.first.id : null);
+    final initialIndex = activeId == null
+        ? 0
+        : lists.indexWhere((l) => l.id == activeId).clamp(0, lists.length - 1);
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            titleSpacing: 0,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            scrolledUnderElevation: 1,
-            title: const Text('Tasks'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const SettingsPage())),
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  for (final list in lists)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: ChoiceChip(
-                        label: Text(list.name),
-                        selected: list.id == activeId,
-                        onSelected: (_) => store.setActiveList(list.id),
-                        avatar: list.starred
-                            ? const Icon(Icons.star, size: 16)
-                            : null,
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ActionChip(
-                      avatar: const Icon(Icons.add),
-                      label: const Text('New list'),
-                      onPressed: () => _promptList(context),
+    return DefaultTabController(
+      length: lists.length,
+      initialIndex: initialIndex,
+      child: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (context, _) {
+            return [
+              SliverAppBar.large(
+                titleSpacing: 0,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                scrolledUnderElevation: 1,
+                title: const Text('Tasks'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsPage()),
                     ),
                   ),
                 ],
               ),
-            ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _TabBarDelegate(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surface,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TabBar(
+                            isScrollable: true,
+                            labelStyle: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                            tabs: [
+                              for (final list in lists)
+                                Tab(
+                                  icon: list.starred
+                                      ? const Icon(Icons.star, size: 16)
+                                      : null,
+                                  text: list.name,
+                                ),
+                            ],
+                            onTap: (index) =>
+                                store.setActiveList(lists[index].id),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          tooltip: 'New list',
+                          onPressed: () => _promptList(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            children: [
+              for (final list in lists)
+                _TaskListView(listId: list.id, key: ValueKey(list.id)),
+            ],
           ),
-          if (activeId == null)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: _EmptyState(),
-            )
-          else
-            _TaskListView(listId: activeId, key: ValueKey(activeId)),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openEditor(context),
-        label: const Text('Add task'),
-        icon: const Icon(Icons.add),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _openEditor(context),
+          label: const Text('Add task'),
+          icon: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -130,36 +148,81 @@ class HomeShell extends StatelessWidget {
 class _TaskListView extends StatelessWidget {
   const _TaskListView({super.key, required this.listId});
 
-  final String? listId;
+  final String listId;
 
   @override
   Widget build(BuildContext context) {
     final store = context.watch<TaskStore>();
-    if (listId == null) {
-      return const SliverFillRemaining(
-        hasScrollBody: false,
-        child: _EmptyState(),
-      );
-    }
-    final tasks = store.tasksForList(listId!);
+    final tasks = store.tasksForList(listId);
     if (tasks.isEmpty) {
-      return const SliverFillRemaining(
-        hasScrollBody: false,
-        child: _EmptyState(),
-      );
+      return const _EmptyState();
     }
-    tasks.sort((a, b) {
-      if (a.starred != b.starred) return b.starred ? 1 : -1;
-      if (a.dueAt != null && b.dueAt != null) {
-        return a.dueAt!.compareTo(b.dueAt!);
-      }
-      return a.createdAt.compareTo(b.createdAt);
-    });
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        final task = tasks[index];
-        return TaskTile(task: task, onEdit: () => _openEditor(context, task));
-      }, childCount: tasks.length),
+
+    List<TaskModel> _sorted(List<TaskModel> items) {
+      final copy = [...items];
+      copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return copy;
+    }
+
+    final activeTasks = _sorted(tasks.where((t) => !t.completed).toList());
+    final completedTasks = _sorted(tasks.where((t) => t.completed).toList());
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      children: [
+        if (activeTasks.isNotEmpty)
+          SettingSection(
+            styleTile: true,
+            title: const SettingSectionTitle('Active tasks', noPadding: true),
+            tiles: [
+              for (final task in activeTasks)
+                SettingActionTile(
+                  icon: Icon(
+                    task.starred ? Icons.star : Icons.circle_outlined,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  title: Text(task.title),
+                  description: task.description?.isNotEmpty == true
+                      ? Text(task.description!)
+                      : null,
+
+                  trailing: const Icon(Icons.star_border_outlined),
+                  onTap: () => _openEditor(context, task),
+                ),
+            ],
+          ),
+        if (completedTasks.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SettingSection(
+            styleTile: true,
+            title: const SettingSectionTitle(
+              'Completed tasks',
+              noPadding: true,
+            ),
+            tiles: [
+              for (final task in completedTasks)
+                SettingActionTile(
+                  icon: Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    task.title,
+                    style: const TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                  description: task.description?.isNotEmpty == true
+                      ? Text(task.description!)
+                      : null,
+                  trailing: const Icon(Icons.star_border_outlined),
+                  onTap: () => _openEditor(context, task),
+                ),
+            ],
+          ),
+        ],
+        if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),
+      ],
     );
   }
 
@@ -191,5 +254,31 @@ class _EmptyState extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  _TabBarDelegate({required this.child});
+
+  final Widget child;
+
+  @override
+  double get minExtent => kToolbarHeight;
+
+  @override
+  double get maxExtent => kToolbarHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _TabBarDelegate oldDelegate) {
+    return oldDelegate.child != child;
   }
 }
