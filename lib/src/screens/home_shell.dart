@@ -41,10 +41,34 @@ class HomeShell extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 title: const Text('Tasks'),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SettingsPage()),
+                      ),
+                      child: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        child: ClipOval(
+                          child: SizedBox.expand(
+                            child: Image.asset(
+                              'assets/images/avatar.jpg',
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.person,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
