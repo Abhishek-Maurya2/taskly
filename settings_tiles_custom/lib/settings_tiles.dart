@@ -16,3 +16,4 @@ export 'package:settings_tiles/src/tiles/setting_tile.dart';
 export 'package:settings_tiles/src/tiles/widgets/setting_tile_icon.dart';
 export 'package:settings_tiles/src/tiles/widgets/setting_tile_value.dart';
 export 'package:settings_tiles/src/types/multiple_options_details.dart';
+export 'package:settings_tiles/src/tiles/setting_expandable/setting_expandable_list_tile.dart';

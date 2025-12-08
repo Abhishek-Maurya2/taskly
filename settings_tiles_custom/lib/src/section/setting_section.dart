@@ -19,8 +19,8 @@ class SettingSection extends StatelessWidget {
   /// The title of the setting section.
   final Widget? title;
 
-  /// The list of setting tiles.
-  final List<SettingTile> tiles;
+  /// The list of setting tiles/widgets.
+  final List<Widget> tiles;
 
   /// A divider displayed between the setting tiles.
   final Divider? divider;
@@ -65,7 +65,8 @@ class SettingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.fromLTRB(styleTile ? 12 : 0, 0, styleTile ? 12 : 0, 0),
+        padding:
+            EdgeInsets.fromLTRB(styleTile ? 12 : 0, 0, styleTile ? 12 : 0, 0),
         child: Column(
           spacing: styleTile ? 2 : 0,
           crossAxisAlignment: CrossAxisAlignment.start,

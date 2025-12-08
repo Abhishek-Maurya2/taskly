@@ -4,8 +4,23 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../services/notification_service.dart';
 import 'appearance_screen.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool toggled = true;
+  bool checked = false;
+  String singleOption = 'Option 1';
+  List<String> multiOptions = const ['Option 1'];
+  double sliderValue = 5;
+  double customSliderValue = 7;
+  final List<double> customSliderValues = const [1, 7, 30];
+  Color color = Colors.blue;
+  String textValue = 'Hello world';
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +95,132 @@ class SettingsPage extends StatelessWidget {
                       description: Text(
                         'Settings now use Material 3 styled tiles.',
                       ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                SettingSection(
+                  styleTile: true,
+                  title: const SettingSectionTitle(
+                    'Tile gallery',
+                    noPadding: true,
+                  ),
+                  tiles: [
+                    const SettingTextTile(
+                      icon: SettingTileIcon(Icons.abc),
+                      title: Text('Text tile'),
+                      description: Text('Plain informational tile'),
+                     
+                    ),
+                    SettingActionTile(
+                      icon: const SettingTileIcon(Icons.touch_app),
+                      title: const Text('Action tile'),
+                      description: const Text('Taps trigger an action'),
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Action tile tapped'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      ),
+                    ),
+                    SettingSwitchTile(
+                      icon: const SettingTileIcon(Icons.toggle_on),
+                      title: const Text('Switch tile'),
+                      description: const Text('Toggle on/off state'),
+                      toggled: toggled,
+                      onChanged: (value) => setState(() => toggled = value),
+                    ),
+                    SettingCheckboxTile(
+                      icon: const SettingTileIcon(Icons.check_box),
+                      title: const Text('Checkbox tile'),
+                      description: const Text('Supports tri-state'),
+                      checked: checked,
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => checked = value);
+                      },
+                    ),
+                    SettingSingleOptionTile(
+                      icon: const SettingTileIcon(Icons.radio_button_checked),
+                      title: const Text('Single option'),
+                      value: SettingTileValue(singleOption),
+                      description: const Text('Pick exactly one'),
+                      dialogTitle: 'Choose one',
+                      options: const ['Option 1', 'Option 2', 'Option 3'],
+                      initialOption: singleOption,
+                      onSubmitted: (value) =>
+                          setState(() => singleOption = value),
+                    ),
+                    SettingMultipleOptionsTile(
+                      icon: const SettingTileIcon(Icons.checklist),
+                      title: const Text('Multiple options'),
+                      value: SettingTileValue(multiOptions.join(' | ')),
+                      description: const Text('Pick many'),
+                      dialogTitle: 'Choose items',
+                      options: const ['Option 1', 'Option 2', 'Option 3'],
+                      initialOptions: multiOptions,
+                      onSubmitted: (value) =>
+                          setState(() => multiOptions = value),
+                    ),
+                    SettingTextFieldTile(
+                      icon: const SettingTileIcon(Icons.text_fields),
+                      title: const Text('Text field'),
+                      value: SettingTileValue(textValue),
+                      description: const Text('Opens a text input dialog'),
+                      dialogTitle: 'Edit text',
+                      initialText: textValue,
+                      onSubmitted: (value) => setState(() => textValue = value),
+                    ),
+                    SettingSliderTile(
+                      icon: const SettingTileIcon(Icons.linear_scale),
+                      title: const Text('Slider'),
+                      value: SettingTileValue(sliderValue.toStringAsFixed(0)),
+                      description: const Text('Continuous numeric choice'),
+                      dialogTitle: 'Adjust value',
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      initialValue: sliderValue,
+                      onSubmitted: (value) =>
+                          setState(() => sliderValue = value),
+                    ),
+                    SettingCustomSliderTile(
+                      icon: const SettingTileIcon(Icons.stacked_line_chart),
+                      title: const Text('Custom slider'),
+                      value: SettingTileValue(
+                        customSliderValue.toStringAsFixed(0),
+                      ),
+                      description: const Text('Discrete preset values'),
+                      dialogTitle: 'Choose interval',
+                      values: customSliderValues,
+                      initialValue: customSliderValue,
+                      label: (value) {
+                        switch (value) {
+                          case 1:
+                            return 'Day';
+                          case 7:
+                            return 'Week';
+                          case 30:
+                            return 'Month';
+                          default:
+                            return value.toStringAsFixed(0);
+                        }
+                      },
+                      onSubmitted: (value) =>
+                          setState(() => customSliderValue = value),
+                    ),
+                    SettingColorTile(
+                      icon: const SettingTileIcon(Icons.color_lens),
+                      title: const Text('Color'),
+                      description: const Text('Pick a color'),
+                      dialogTitle: 'Choose color',
+                      initialColor: color,
+                      onSubmitted: (value) => setState(() => color = value),
+                    ),
+                    SettingAboutTile(
+                      applicationIcon: const Icon(Icons.apps),
+                      applicationName: 'Taskly',
+                      applicationVersion: 'v1.0.0',
                     ),
                   ],
                 ),

@@ -50,6 +50,7 @@ class ThemeController extends ChangeNotifier {
 
   void setSeedColor(Color newColor) {
     _seedColor = newColor;
+    // ignore: deprecated_member_use
     _corePalette = CorePalette.of(newColor.value);
     _isUsingDynamicColor = false;
     notifyListeners();
@@ -57,6 +58,7 @@ class ThemeController extends ChangeNotifier {
 
   void setSeedColorSilently(Color newColor) {
     _seedColor = newColor;
+    // ignore: deprecated_member_use
     _corePalette = CorePalette.of(newColor.value);
     _isUsingDynamicColor = false;
   }
@@ -73,7 +75,7 @@ class ThemeController extends ChangeNotifier {
       case ThemeMode.dark:
         return Brightness.dark;
       case ThemeMode.system:
-        return WidgetsBinding.instance.window.platformBrightness;
+        return WidgetsBinding.instance.platformDispatcher.platformBrightness;
     }
   }
 
@@ -85,7 +87,6 @@ class ThemeController extends ChangeNotifier {
       final brightness = currentBrightness;
 
       int primaryTone = brightness == Brightness.light ? 40 : 80;
-      int secondaryTone = brightness == Brightness.light ? 40 : 80;
 
       _seedColor = Color(corePalette.primary.get(primaryTone));
       _isUsingDynamicColor = true;

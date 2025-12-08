@@ -158,14 +158,84 @@ class _TaskListView extends StatelessWidget {
       return const _EmptyState();
     }
 
-    List<TaskModel> _sorted(List<TaskModel> items) {
+    List<TaskModel> sorted(List<TaskModel> items) {
       final copy = [...items];
       copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return copy;
     }
 
-    final activeTasks = _sorted(tasks.where((t) => !t.completed).toList());
-    final completedTasks = _sorted(tasks.where((t) => t.completed).toList());
+    final activeTasks = sorted(tasks.where((t) => !t.completed).toList());
+    final completedTasks = sorted(tasks.where((t) => t.completed).toList());
+
+    List<Widget> buildTaskTiles(
+      List<TaskModel> source, {
+      required bool completed,
+    }) {
+      final tiles = <Widget>[];
+      final colorScheme = Theme.of(context).colorScheme;
+
+      for (final task in source) {
+        final subTiles = <Widget>[];
+        if (task.subtasks.isNotEmpty) {
+          for (final sub in task.subtasks) {
+            subTiles.add(
+              Padding(
+                padding: const EdgeInsets.only(left: 12.0, bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      sub.completed
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      size: 18,
+                      color: sub.completed ? Colors.green : colorScheme.outline,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        sub.title,
+                        style: sub.completed
+                            ? const TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+
+        tiles.add(
+          SettingExpandableListTile(
+            icon: Icon(
+              task.starred
+                  ? Icons.star
+                  : (!completed ? Icons.circle_outlined : Icons.check),
+              color: completed ? Colors.green : colorScheme.onSurface,
+            ),
+            title: Text(
+              task.title,
+              style: completed
+                  ? const TextStyle(decoration: TextDecoration.lineThrough)
+                  : null,
+            ),
+            description: task.description?.isNotEmpty == true
+                ? Text(task.description!)
+                : null,
+            trailing: const Icon(Icons.edit_outlined),
+            onTap: () => _openEditor(context, task),
+            subItems: subTiles,
+            chips: task.subtasks.map((s) => s.title).toList(),
+            initiallyExpanded: false,
+          ),
+        );
+      }
+
+      return tiles;
+    }
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -174,22 +244,7 @@ class _TaskListView extends StatelessWidget {
           SettingSection(
             styleTile: true,
             title: const SettingSectionTitle('Active tasks', noPadding: true),
-            tiles: [
-              for (final task in activeTasks)
-                SettingActionTile(
-                  icon: Icon(
-                    task.starred ? Icons.star : Icons.circle_outlined,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  title: Text(task.title),
-                  description: task.description?.isNotEmpty == true
-                      ? Text(task.description!)
-                      : null,
-
-                  trailing: const Icon(Icons.star_border_outlined),
-                  onTap: () => _openEditor(context, task),
-                ),
-            ],
+            tiles: buildTaskTiles(activeTasks, completed: false),
           ),
         if (completedTasks.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -199,26 +254,7 @@ class _TaskListView extends StatelessWidget {
               'Completed tasks',
               noPadding: true,
             ),
-            tiles: [
-              for (final task in completedTasks)
-                SettingActionTile(
-                  icon: Icon(
-                    Icons.check,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Text(
-                    task.title,
-                    style: const TextStyle(
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                  description: task.description?.isNotEmpty == true
-                      ? Text(task.description!)
-                      : null,
-                  trailing: const Icon(Icons.star_border_outlined),
-                  onTap: () => _openEditor(context, task),
-                ),
-            ],
+            tiles: buildTaskTiles(completedTasks, completed: true),
           ),
         ],
         if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),

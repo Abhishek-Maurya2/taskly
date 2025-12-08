@@ -17,6 +17,7 @@ abstract class SettingTile extends StatelessWidget {
     this.value,
     this.title,
     this.description,
+    this.extraDescription,
     this.trailing,
     this.fullempty = false,
   });
@@ -47,6 +48,9 @@ abstract class SettingTile extends StatelessWidget {
   /// The description of the title.
   final Widget? description;
 
+  /// An optional second line shown under the description.
+  final Widget? extraDescription;
+
   /// An optional widget to show at the end of the tile.
   final Widget? trailing;
 
@@ -57,16 +61,20 @@ abstract class SettingTile extends StatelessWidget {
     }
 
     return ListTile(
-      contentPadding: fullempty ? const EdgeInsets.all(0) : const EdgeInsets.only(right: 16, left: 16),
+      contentPadding: fullempty
+          ? const EdgeInsets.all(0)
+          : const EdgeInsets.only(right: 16, left: 16),
       enabled: enabled,
       leading: icon,
       title: _buildStyledTitle(context),
-      subtitle: description != null || value != null
+      subtitle: description != null || value != null || extraDescription != null
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (value != null) value!,
                 if (description != null) _buildStyledDescription(context),
+                if (extraDescription != null)
+                  _buildStyledDescription(context, extraDescription!),
               ],
             )
           : null,
@@ -92,9 +100,10 @@ abstract class SettingTile extends StatelessWidget {
     return title;
   }
 
-  Widget _buildStyledDescription(BuildContext context) {
-    if (description is Text) {
-      final textWidget = description as Text;
+  Widget _buildStyledDescription(BuildContext context, [Widget? widget]) {
+    final target = widget ?? description;
+    if (target is Text) {
+      final textWidget = target as Text;
       return Text(
         textWidget.data ?? '',
         style: textWidget.style ?? const TextStyle(),
@@ -104,6 +113,6 @@ abstract class SettingTile extends StatelessWidget {
       );
     }
 
-    return description!;
+    return target!;
   }
 }

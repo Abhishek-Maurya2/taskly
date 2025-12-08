@@ -13,6 +13,7 @@ class SettingActionTile extends SettingTile {
     super.title,
     super.value,
     super.description,
+    super.extraDescription,
     super.trailing,
   });
 
