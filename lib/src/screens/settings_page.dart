@@ -3,6 +3,7 @@ import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../services/notification_service.dart';
 import 'appearance_screen.dart';
+import 'tab_management_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,16 +13,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool toggled = true;
-  bool checked = false;
-  String singleOption = 'Option 1';
-  List<String> multiOptions = const ['Option 1'];
-  double sliderValue = 5;
-  double customSliderValue = 7;
-  final List<double> customSliderValues = const [1, 7, 30];
-  Color color = Colors.blue;
-  String textValue = 'Hello world';
-
   @override
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
@@ -63,6 +54,36 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingSection(
                   styleTile: true,
                   title: const SettingSectionTitle(
+                    'Tabs & lists',
+                    noPadding: true,
+                  ),
+                  tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.tab,
+                        isLight
+                            ? const Color(0xffd1e8ff)
+                            : const Color(0xff0f4c81),
+                        isLight
+                            ? const Color(0xff0f4c81)
+                            : const Color(0xffd1e8ff),
+                      ),
+                      title: const Text('Manage tabs & lists'),
+                      description: const Text(
+                        'Reorder list tabs and pick your focus.',
+                      ),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const TabManagementPage(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                SettingSection(
+                  styleTile: true,
+                  title: const SettingSectionTitle(
                     'Notifications',
                     noPadding: true,
                   ),
@@ -80,7 +101,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 10),
                 SettingSection(
                   styleTile: true,
                   title: const SettingSectionTitle('Info', noPadding: true),
@@ -98,7 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ],
                 ),
-                
+
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
               ],
             ),

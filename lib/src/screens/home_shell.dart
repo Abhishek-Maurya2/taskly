@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_tiles/settings_tiles.dart';
@@ -171,38 +172,42 @@ class _TaskListView extends StatelessWidget {
     final activeTasks = _sorted(tasks.where((t) => !t.completed).toList());
     final completedTasks = _sorted(tasks.where((t) => t.completed).toList());
 
-    return ListView(
-      padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
-      children: [
-        if (activeTasks.isNotEmpty)
-          SettingSection(
-            styleTile: true,
-            title: const SettingSectionTitle('Active tasks', noPadding: true),
-            tiles: _buildTaskTiles(
-              context,
-              store,
-              activeTasks,
-              completed: false,
+    return _PullToRefresh(
+      onRefresh: () => store.refresh(),
+      child: ListView(
+        padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
+        children: [
+          if (activeTasks.isNotEmpty)
+            SettingSection(
+              styleTile: true,
+              title: const SettingSectionTitle('Active tasks', noPadding: true),
+              tiles: _buildTaskTiles(
+                context,
+                store,
+                activeTasks,
+                completed: false,
+              ),
             ),
-          ),
-        if (completedTasks.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          SettingSection(
-            styleTile: true,
-            title: const SettingSectionTitle(
-              'Completed tasks',
-              noPadding: true,
+          if (completedTasks.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SettingSection(
+              styleTile: true,
+              title: const SettingSectionTitle(
+                'Completed tasks',
+                noPadding: true,
+              ),
+              tiles: _buildTaskTiles(
+                context,
+                store,
+                completedTasks,
+                completed: true,
+              ),
             ),
-            tiles: _buildTaskTiles(
-              context,
-              store,
-              completedTasks,
-              completed: true,
-            ),
-          ),
+          ],
+          if (activeTasks.isEmpty && completedTasks.isEmpty)
+            const _EmptyState(),
         ],
-        if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),
-      ],
+      ),
     );
   }
 }
@@ -225,38 +230,45 @@ class _StarredTaskListView extends StatelessWidget {
     final activeTasks = _sorted(allTasks.where((t) => !t.completed).toList());
     final completedTasks = _sorted(allTasks.where((t) => t.completed).toList());
 
-    return ListView(
-      padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
-      children: [
-        if (activeTasks.isNotEmpty)
-          SettingSection(
-            styleTile: true,
-            title: const SettingSectionTitle('Starred tasks', noPadding: true),
-            tiles: _buildTaskTiles(
-              context,
-              store,
-              activeTasks,
-              completed: false,
+    return _PullToRefresh(
+      onRefresh: () => store.refresh(),
+      child: ListView(
+        padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
+        children: [
+          if (activeTasks.isNotEmpty)
+            SettingSection(
+              styleTile: true,
+              title: const SettingSectionTitle(
+                'Starred tasks',
+                noPadding: true,
+              ),
+              tiles: _buildTaskTiles(
+                context,
+                store,
+                activeTasks,
+                completed: false,
+              ),
             ),
-          ),
-        if (completedTasks.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          SettingSection(
-            styleTile: true,
-            title: const SettingSectionTitle(
-              'Completed starred tasks',
-              noPadding: true,
+          if (completedTasks.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SettingSection(
+              styleTile: true,
+              title: const SettingSectionTitle(
+                'Completed starred tasks',
+                noPadding: true,
+              ),
+              tiles: _buildTaskTiles(
+                context,
+                store,
+                completedTasks,
+                completed: true,
+              ),
             ),
-            tiles: _buildTaskTiles(
-              context,
-              store,
-              completedTasks,
-              completed: true,
-            ),
-          ),
+          ],
+          if (activeTasks.isEmpty && completedTasks.isEmpty)
+            const _EmptyState(),
         ],
-        if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),
-      ],
+      ),
     );
   }
 }
@@ -430,6 +442,81 @@ List<Widget> _buildTaskTiles(
   }
 
   return tiles;
+}
+
+class _PullToRefresh extends StatefulWidget {
+  const _PullToRefresh({required this.child, required this.onRefresh});
+
+  final Widget child;
+  final Future<void> Function() onRefresh;
+
+  @override
+  State<_PullToRefresh> createState() => _PullToRefreshState();
+}
+
+class _PullToRefreshState extends State<_PullToRefresh> {
+  bool _refreshing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        RefreshIndicator(
+          color: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          strokeWidth: 0.0001,
+          onRefresh: () async {
+            setState(() => _refreshing = true);
+            try {
+              await widget.onRefresh();
+            } finally {
+              if (mounted) setState(() => _refreshing = false);
+            }
+          },
+          child: widget.child,
+        ),
+        IgnorePointer(
+          child: AnimatedOpacity(
+            opacity: _refreshing ? 1 : 0,
+            duration: const Duration(milliseconds: 150),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(
+                        context,
+                      ).shadowColor.withValues(alpha: 0.18),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: ExpressiveLoadingIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                      maxWidth: 28,
+                      maxHeight: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _EmptyState extends StatelessWidget {

@@ -138,6 +138,31 @@ class TaskStore extends ChangeNotifier {
   List<TaskModel> tasksForList(String listId) =>
       _tasks.where((t) => t.listId == listId).toList();
 
+  Future<void> refresh() async {
+    await _repository.init();
+    _lists = await _repository.loadLists();
+    _tasks = await _repository.loadTasks();
+    if (_lists.isEmpty) {
+      _activeListId = null;
+    } else if (_activeListId == null ||
+        !_lists.any((l) => l.id == _activeListId)) {
+      _activeListId = _lists.first.id;
+    }
+    notifyListeners();
+  }
+
+  Future<void> reorderLists(List<TaskListModel> newOrder) async {
+    _lists = newOrder;
+    if (_lists.isEmpty) {
+      _activeListId = null;
+    } else if (_activeListId == null ||
+        !_lists.any((l) => l.id == _activeListId)) {
+      _activeListId = _lists.first.id;
+    }
+    await _persist();
+    notifyListeners();
+  }
+
   Future<void> _persist() async {
     await _repository.persist(lists: _lists, tasks: _tasks);
   }
