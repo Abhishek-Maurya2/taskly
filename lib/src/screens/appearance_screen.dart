@@ -41,6 +41,16 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, size: 24),
+              tooltip: 'Back',
+              onPressed: () => Navigator.of(context).maybePop(),
+              style: IconButton.styleFrom(
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                fixedSize: Size(20, 50),
+              ),
+            ),
           ),
           SliverToBoxAdapter(
             child: Column(

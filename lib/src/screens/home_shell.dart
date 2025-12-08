@@ -79,7 +79,10 @@ class HomeShell extends StatelessWidget {
                                 ?.copyWith(fontWeight: FontWeight.w600),
                             labelColor: Theme.of(context).colorScheme.primary,
                             tabs: [
-                              const Tab(text: 'Starred'),
+                              const Tab(
+                                icon: Icon(Icons.star),
+                                iconMargin: EdgeInsets.zero,
+                              ),
                               for (final list in lists) Tab(text: list.name),
                             ],
                             onTap: (index) {
@@ -430,9 +433,11 @@ List<Widget> _buildTaskTiles(
         description: task.description?.isNotEmpty == true
             ? Text(task.description!)
             : null,
-        trailing: task.starred
-            ? const Icon(Icons.star)
-            : const Icon(Icons.star_border),
+        trailing: IconButton(
+          icon: Icon(task.starred ? Icons.star : Icons.star_border),
+          tooltip: task.starred ? 'Unstar task' : 'Star task',
+          onPressed: () => store.toggleStar(task),
+        ),
         onTap: () => _openTaskEditor(context, task),
         subItems: subTiles,
         chips: chips,
