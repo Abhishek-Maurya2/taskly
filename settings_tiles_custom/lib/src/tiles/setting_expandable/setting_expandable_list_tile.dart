@@ -98,11 +98,20 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                 dense: true,
                 visualDensity: VisualDensity.compact,
                 title: Text(
-                  _expanded ? 'Hide details' : 'Show details',
+                  _expanded ? 'Hide Sub Tasks' : 'Show Sub Tasks',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                trailing:
-                    Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                trailing: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  padding: const EdgeInsets.only(
+                      top: 4, bottom: 4, left: 8, right: 8),
+                  child:
+                      Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                ),
                 onTap: () => setState(() => _expanded = !_expanded),
               ),
               AnimatedSize(
@@ -129,8 +138,8 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                                         bottom: BorderSide(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .surface,
-                                          width: 0.6,
+                                              .surfaceContainerLowest,
+                                          width: 0.8,
                                         ),
                                       ),
                                     ),

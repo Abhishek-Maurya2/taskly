@@ -174,47 +174,98 @@ class _TaskListView extends StatelessWidget {
       final tiles = <Widget>[];
       final colorScheme = Theme.of(context).colorScheme;
 
+      String dueLabel(DateTime date) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final target = DateTime(date.year, date.month, date.day);
+        final diff = target.difference(today).inDays;
+        if (diff == 0) return 'Due today';
+        if (diff == 1) return 'Due tomorrow';
+        if (diff == -1) return 'Due yesterday';
+        return 'Due ${date.month}/${date.day}';
+      }
+
       for (final task in source) {
         final subTiles = <Widget>[];
         if (task.subtasks.isNotEmpty) {
           for (final sub in task.subtasks) {
             subTiles.add(
               Padding(
-                padding: const EdgeInsets.only(left: 12.0, bottom: 8, top: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      sub.completed
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      size: 18,
-                      color: sub.completed ? Colors.green : colorScheme.outline,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        sub.title,
-                        style: sub.completed
-                            ? const TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                              )
-                            : null,
+                padding: const EdgeInsets.only(
+                  left: 12.0,
+                  bottom: 12,
+                  top: 12,
+                  right: 12,
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () async {
+                    final updatedSub = sub.copyWith(completed: !sub.completed);
+                    final newSubtasks = task.subtasks
+                        .map((s) => s.id == sub.id ? updatedSub : s)
+                        .toList();
+                    final updatedTask = task.copyWith(
+                      subtasks: newSubtasks,
+                      updatedAt: DateTime.now(),
+                    );
+                    await store.updateTask(updatedTask);
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        sub.completed
+                            ? Icons.check
+                            : Icons.radio_button_unchecked,
+                        size: 24,
+                        color: sub.completed
+                            ? colorScheme.primary
+                            : colorScheme.outline,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          sub.title,
+                          style: TextStyle(
+                            decoration: sub.completed
+                                ? TextDecoration.lineThrough
+                                : null,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           }
         }
 
+        final chips = <String>[];
+        if (task.reminderAt != null) {
+          final time = TimeOfDay.fromDateTime(task.reminderAt!.toLocal())
+              .format(context);
+          chips.add('Reminder $time');
+        }
+        if (task.dueAt != null) {
+          chips.add(dueLabel(task.dueAt!.toLocal()));
+        }
+        if (task.attachments.isNotEmpty) {
+          final count = task.attachments.length;
+          chips.add('Media $count');
+        }
+
         tiles.add(
           SettingExpandableListTile(
-            icon: Icon(
-              task.starred
-                  ? Icons.star
-                  : (!completed ? Icons.circle_outlined : Icons.check),
-              color: completed ? Colors.green : colorScheme.onSurface,
+            icon: InkResponse(
+              radius: 22,
+              onTap: () async => store.toggleCompletion(task),
+              child: Icon(
+                task.starred
+                    ? Icons.star
+                    : (!completed ? Icons.circle_outlined : Icons.check),
+                color: completed ? colorScheme.primary : colorScheme.onSurface,
+              ),
             ),
             title: Text(
               task.title,
@@ -228,6 +279,7 @@ class _TaskListView extends StatelessWidget {
             trailing: const Icon(Icons.star_border),
             onTap: () => _openEditor(context, task),
             subItems: subTiles,
+            chips: chips,
             initiallyExpanded: true,
           ),
         );
