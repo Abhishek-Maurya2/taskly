@@ -139,8 +139,9 @@ class _TaskListView extends StatelessWidget {
     }
     tasks.sort((a, b) {
       if (a.starred != b.starred) return b.starred ? 1 : -1;
-      if (a.dueAt != null && b.dueAt != null)
+      if (a.dueAt != null && b.dueAt != null) {
         return a.dueAt!.compareTo(b.dueAt!);
+      }
       return a.createdAt.compareTo(b.createdAt);
     });
     return ListView.builder(

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-ThemeData buildTasklyTheme() {
-  const seed = Color(0xFF4A6B5F);
-  final scheme = ColorScheme.fromSeed(
-    seedColor: seed,
-    brightness: Brightness.light,
-  );
+ThemeData buildTasklyTheme({
+  required Color seed,
+  required Brightness brightness,
+}) {
+  final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: const Color(0xFFF8F7F3),
+    scaffoldBackgroundColor: brightness == Brightness.light
+        ? const Color(0xFFF8F7F3)
+        : scheme.surface,
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,

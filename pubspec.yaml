@@ -38,10 +38,16 @@ dependencies:
   shared_preferences: ^2.2.2
   uuid: ^4.2.1
   collection: ^1.18.0
-  intl: ^0.18.1
+  intl: ^0.20.2
   file_picker: ^8.0.5
   flutter_local_notifications: ^17.1.0
   timezone: ^0.9.2
+  dynamic_color: ^1.7.0
+  material_color_utilities: ^0.11.1
+  settings_tiles:
+    path: settings_tiles_custom
+  expressive_loading_indicator:
+    path: expressive_loading_indicator_modified
 
 dev_dependencies:
   flutter_test:
