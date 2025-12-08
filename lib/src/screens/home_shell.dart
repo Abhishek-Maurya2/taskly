@@ -43,17 +43,33 @@ class HomeShell extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _TabBarDelegate(
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(52),
                   child: Container(
                     color: Theme.of(context).colorScheme.surface,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       children: [
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          tooltip: 'New list',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 40,
+                            height: 40,
+                          ),
+                          onPressed: () => _promptList(context),
+                        ),
                         Expanded(
                           child: TabBar(
                             isScrollable: true,
+                            tabAlignment: TabAlignment.start,
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                            ),
+                            indicatorPadding: EdgeInsets.zero,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            dividerColor: Colors.transparent,
                             labelStyle: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.w600),
                             labelColor: Theme.of(context).colorScheme.primary,
@@ -62,24 +78,6 @@ class HomeShell extends StatelessWidget {
                             ],
                             onTap: (index) =>
                                 store.setActiveList(lists[index].id),
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outlineVariant,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.add),
-                            tooltip: 'New list',
-                            onPressed: () => _promptList(context),
                           ),
                         ),
                       ],
@@ -380,31 +378,5 @@ class _EmptyState extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  _TabBarDelegate({required this.child});
-
-  final Widget child;
-
-  @override
-  double get minExtent => kToolbarHeight;
-
-  @override
-  double get maxExtent => kToolbarHeight;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(covariant _TabBarDelegate oldDelegate) {
-    return oldDelegate.child != child;
   }
 }
