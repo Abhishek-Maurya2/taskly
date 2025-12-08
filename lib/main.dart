@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'src/app.dart';
 import 'src/data/local_task_repository.dart';
 import 'src/notifiers/unit_settings_notifier.dart';

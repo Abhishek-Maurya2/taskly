@@ -228,8 +228,7 @@ class _TaskListView extends StatelessWidget {
             trailing: const Icon(Icons.edit_outlined),
             onTap: () => _openEditor(context, task),
             subItems: subTiles,
-            chips: task.subtasks.map((s) => s.title).toList(),
-            initiallyExpanded: false,
+            initiallyExpanded: true,
           ),
         );
       }

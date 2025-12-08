@@ -55,8 +55,8 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
     final trailingWidgets = <Widget>[];
     if (widget.trailing != null) trailingWidgets.add(widget.trailing!);
     if (hasSubContent) {
-      trailingWidgets
-          .add(Icon(_expanded ? Icons.expand_less : Icons.expand_more));
+      // trailingWidgets
+      //     .add(Icon(_expanded ? Icons.expand_less : Icons.expand_more));
     }
 
     final subtitleNeeded = widget.value != null || widget.description != null;
@@ -76,7 +76,7 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
           : const EdgeInsets.only(right: 16, left: 16),
       enabled: widget.enabled,
       leading: widget.icon,
-      title: _styledText(widget.title),
+      title: widget.title != null ? _styledText(widget.title!) : null,
       subtitle: subtitle,
       trailing: trailingWidgets.isNotEmpty
           ? Row(
@@ -84,12 +84,7 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
               children: trailingWidgets,
             )
           : null,
-      onTap: () {
-        widget.onTap?.call();
-        if (hasSubContent) {
-          setState(() => _expanded = !_expanded);
-        }
-      },
+      onTap: widget.onTap,
     );
 
     final chipWidgets = (widget.chips ?? <String>[])
@@ -97,29 +92,44 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
         .toList();
 
     final expandedChild = hasSubContent
-        ? AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: _expanded
-                ? Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.subItems.isNotEmpty) ...widget.subItems,
-                        if (chipWidgets.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: chipWidgets,
-                          ),
-                        ],
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
+        ? Column(
+            children: [
+              ListTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                title: Text(
+                  _expanded ? 'Hide subtasks' : 'Show subtasks',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                trailing:
+                    Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                onTap: () => setState(() => _expanded = !_expanded),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: _expanded
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (widget.subItems.isNotEmpty) ...widget.subItems,
+                            if (chipWidgets.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 14,
+                                children: chipWidgets,
+                              ),
+                            ],
+                          ],
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
           )
         : const SizedBox.shrink();
 
@@ -132,8 +142,7 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
     );
   }
 
-  Widget? _styledText(Widget? widget) {
-    if (widget == null) return null;
+  Widget _styledText(Widget widget) {
     if (widget is Text) {
       return Text(
         widget.data ?? '',
