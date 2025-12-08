@@ -1,101 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:settings_tiles/settings_tiles.dart';
-
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import '../services/notification_service.dart';
-import '../state/task_store.dart';
-import '../utils/theme_controller.dart';
+import 'appearance_screen.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<TaskStore>();
-    final activeList = store.activeList;
-    final theme = context.watch<ThemeController>();
-    final themeLabel = switch (theme.themeMode) {
-      ThemeMode.dark => 'Dark',
-      ThemeMode.light => 'Light',
-      ThemeMode.system => 'System',
-    };
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
+            title: const Text('settings'),
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
-            title: const Text('Settings'),
           ),
           SliverToBoxAdapter(
             child: Column(
               children: [
                 SettingSection(
                   styleTile: true,
-                  title: const SettingSectionTitle(
-                    'Appearance',
-                    noPadding: true,
-                  ),
                   tiles: [
-                    SettingSingleOptionTile(
-                      icon: const SettingTileIcon(Icons.brightness_6_outlined),
-                      title: const Text('Theme'),
-                      dialogTitle: 'Theme',
-                      options: const ['System', 'Light', 'Dark'],
-                      initialOption: themeLabel,
-                      value: SettingTileValue(themeLabel),
-                      onSubmitted: (value) {
-                        switch (value) {
-                          case 'Light':
-                            theme.setThemeMode(ThemeMode.light);
-                          case 'Dark':
-                            theme.setThemeMode(ThemeMode.dark);
-                          default:
-                            theme.setThemeMode(ThemeMode.system);
-                        }
-                      },
-                    ),
-                    SettingSwitchTile(
-                      icon: const SettingTileIcon(Icons.palette_outlined),
-                      title: const Text('Dynamic color'),
-                      description: Text(
-                        theme.supportsDynamicColor
-                            ? 'Use device wallpaper colors'
-                            : 'Not supported on this device',
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.format_paint,
+                        isLight ? Color(0xfff8e287) : Color(0xff534600),
+                        isLight ? Color(0xff534600) : Color(0xfff8e287),
                       ),
-                      toggled: theme.useDynamicColor,
-                      enabled: theme.supportsDynamicColor,
-                      onChanged: theme.setUseDynamicColor,
-                    ),
-                    SettingColorTile(
-                      icon: const SettingTileIcon(Icons.color_lens_outlined),
-                      title: const Text('Accent color'),
-                      description: const Text('Pick a custom seed color'),
-                      dialogTitle: 'Accent color',
-                      initialColor: theme.seedColor,
-                      enableOpacity: false,
-                      onSubmitted: (color) => theme.setSeedColor(color),
-                    ),
-                  ],
-                ),
-                SettingSection(
-                  styleTile: true,
-                  title: const SettingSectionTitle('Lists', noPadding: true),
-                  tiles: [
-                    SettingSwitchTile(
-                      icon: const SettingTileIcon(Icons.star_rounded),
-                      title: const Text('Star active list'),
-                      description: const Text(
-                        'Mark the current list as a favorite.',
-                      ),
-                      toggled: activeList?.starred ?? false,
-                      enabled: activeList != null,
-                      onChanged: (value) {
-                        final list = store.activeList;
-                        if (list == null) return;
-                        store.updateList(list.copyWith(starred: value));
+                      title: const Text("appearance"),
+                      description: const Text("appearance_sub"),
+                      onTap: () async {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AppearanceScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -118,6 +62,7 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: 16),
                 SettingSection(
                   styleTile: true,
                   title: const SettingSectionTitle('Info', noPadding: true),
@@ -139,4 +84,16 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget iconContainer(IconData icon, Color color, Color onColor) {
+  return Container(
+    width: 40,
+    height: 40,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(50),
+      color: color,
+    ),
+    child: Icon(icon, fill: 1, weight: 500, color: onColor),
+  );
 }

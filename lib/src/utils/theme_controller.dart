@@ -1,105 +1,95 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:material_color_utilities/material_color_utilities.dart' as mcu;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:material_color_utilities/material_color_utilities.dart';
+import '../utils/preferences_helper.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 class ThemeController extends ChangeNotifier {
-  ThemeController({Color fallbackSeed = const Color(0xFF4A6B5F)})
-    : _seedColor = fallbackSeed;
+  Color? _seedColor;
+  CorePalette? _corePalette;
 
-  static const _seedKey = 'theme_seed';
-  static const _modeKey = 'theme_mode';
-  static const _dynamicKey = 'use_dynamic_color';
+  ThemeMode _themeMode = PreferencesHelper.getString("AppTheme") == "Light"
+      ? ThemeMode.light
+      : PreferencesHelper.getString("AppTheme") == "Auto"
+      ? ThemeMode.system
+      : ThemeMode.dark;
 
-  Color _seedColor;
-  ThemeMode _themeMode = ThemeMode.system;
-  bool _useDynamicColor = false;
-  bool _supportsDynamicColor = false;
-  mcu.CorePalette? _dynamicPalette;
+  bool isCustom = PreferencesHelper.getBool("usingCustomSeed") ?? false;
+  bool _isUsingDynamicColor = false;
 
-  bool get supportsDynamicColor => _supportsDynamicColor;
-  bool get useDynamicColor => _useDynamicColor && _supportsDynamicColor;
-  ThemeMode get themeMode => _themeMode;
-  Color get seedColor => _seedColor;
+  bool _isDynamicColorSupported = false;
 
-  Color get activeSeedColor {
-    if (useDynamicColor && _dynamicPalette != null) {
-      final isDark = _themeMode == ThemeMode.dark;
-      return Color(_dynamicPalette!.primary.get(isDark ? 80 : 40));
-    }
-    return _seedColor;
+  bool get isDynamicColorSupported => _isDynamicColorSupported;
+
+  Future<void> checkDynamicColorSupport() async {
+    _isDynamicColorSupported =
+        (await DynamicColorPlugin.getCorePalette()) != null;
   }
 
-  Future<void> initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    _themeMode = _stringToMode(prefs.getString(_modeKey)) ?? ThemeMode.system;
-    _seedColor = Color(prefs.getInt(_seedKey) ?? _encodeColor(_seedColor));
-    _useDynamicColor = prefs.getBool(_dynamicKey) ?? false;
+  ThemeController();
 
-    _dynamicPalette = await DynamicColorPlugin.getCorePalette();
-    _supportsDynamicColor = _dynamicPalette != null;
+  Future<void> initialize({
+    Color fallbackColor = const Color(0xFF012E7C),
+  }) async {
+    bool useDynamicColors = PreferencesHelper.getBool("DynamicColors") ?? false;
 
-    if (!_supportsDynamicColor) {
-      _useDynamicColor = false;
-    }
-    notifyListeners();
-  }
-
-  Future<void> setThemeMode(ThemeMode mode) async {
-    if (mode == _themeMode) return;
-    _themeMode = mode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_modeKey, _modeToString(mode));
-    notifyListeners();
-  }
-
-  Future<void> setSeedColor(Color color) async {
-    _seedColor = color;
-    _useDynamicColor = false;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_seedKey, _encodeColor(color));
-    await prefs.setBool(_dynamicKey, _useDynamicColor);
-    notifyListeners();
-  }
-
-  Future<void> setUseDynamicColor(bool value) async {
-    if (!_supportsDynamicColor) {
-      _useDynamicColor = false;
+    if (useDynamicColors) {
+      await loadDynamicColors();
+    } else if (isCustom) {
+      setSeedColor(
+        PreferencesHelper.getColor("CustomMaterialColor") ?? Colors.blue,
+      );
     } else {
-      _useDynamicColor = value;
+      setSeedColor(fallbackColor);
     }
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_dynamicKey, _useDynamicColor);
+  }
+
+  Color get seedColor => _seedColor ?? const Color(0xFF012E7C);
+  CorePalette get corePalette => _corePalette!;
+  ThemeMode get themeMode => _themeMode;
+  bool get isUsingDynamicColor => _isUsingDynamicColor;
+
+  void setSeedColor(Color newColor) {
+    _seedColor = newColor;
+    _corePalette = CorePalette.of(newColor.value);
+    _isUsingDynamicColor = false;
     notifyListeners();
   }
 
-  String _modeToString(ThemeMode mode) {
-    switch (mode) {
+  void setSeedColorSilently(Color newColor) {
+    _seedColor = newColor;
+    _corePalette = CorePalette.of(newColor.value);
+    _isUsingDynamicColor = false;
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    _themeMode = mode;
+    notifyListeners();
+  }
+
+  Brightness get currentBrightness {
+    switch (_themeMode) {
       case ThemeMode.light:
-        return 'light';
+        return Brightness.light;
       case ThemeMode.dark:
-        return 'dark';
+        return Brightness.dark;
       case ThemeMode.system:
-        return 'system';
+        return WidgetsBinding.instance.window.platformBrightness;
     }
   }
 
-  ThemeMode? _stringToMode(String? value) {
-    switch (value) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      case 'system':
-        return ThemeMode.system;
-      default:
-        return null;
-    }
-  }
+  Future<void> loadDynamicColors() async {
+    final corePalette = await DynamicColorPlugin.getCorePalette();
+    if (corePalette != null) {
+      _corePalette = corePalette;
 
-  int _encodeColor(Color color) {
-    // Using value to persist the ARGB color; ignore deprecation in favor of compact encoding.
-    // ignore: deprecated_member_use
-    return color.value;
+      final brightness = currentBrightness;
+
+      int primaryTone = brightness == Brightness.light ? 40 : 80;
+      int secondaryTone = brightness == Brightness.light ? 40 : 80;
+
+      _seedColor = Color(corePalette.primary.get(primaryTone));
+      _isUsingDynamicColor = true;
+      notifyListeners();
+    }
   }
 }
