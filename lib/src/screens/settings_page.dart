@@ -14,7 +14,6 @@ class SettingsPage extends StatelessWidget {
     final store = context.watch<TaskStore>();
     final activeList = store.activeList;
     final theme = context.watch<ThemeController>();
-    final colorScheme = Theme.of(context).colorScheme;
     final themeLabel = switch (theme.themeMode) {
       ThemeMode.dark => 'Dark',
       ThemeMode.light => 'Light',
@@ -24,62 +23,11 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            pinned: true,
-            stretch: true,
-            expandedHeight: 170,
-            backgroundColor: colorScheme.surface,
+          SliverAppBar.large(
+            titleSpacing: 0,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.fadeTitle,
-              ],
-              titlePadding: const EdgeInsetsDirectional.only(
-                start: 16,
-                bottom: 16,
-              ),
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Settings'),
-                  if (activeList != null)
-                    Text(
-                      'Active list • ${activeList.name}',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                ],
-              ),
-              background: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colorScheme.primaryContainer,
-                      colorScheme.surfaceContainerHighest,
-                    ],
-                  ),
-                ),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 18, bottom: 26),
-                    child: Icon(
-                      activeList?.starred == true
-                          ? Icons.star_rounded
-                          : Icons.settings,
-                      color: colorScheme.onPrimaryContainer,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            title: const Text('Settings'),
           ),
           SliverToBoxAdapter(
             child: Column(

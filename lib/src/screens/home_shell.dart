@@ -19,54 +19,59 @@ class HomeShell extends StatelessWidget {
         store.activeListId ?? (lists.isNotEmpty ? lists.first.id : null);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tasks'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsPage())),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.large(
+            titleSpacing: 0,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            scrolledUnderElevation: 1,
+            title: const Text('Tasks'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const SettingsPage())),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                for (final list in lists)
+          SliverToBoxAdapter(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  for (final list in lists)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: ChoiceChip(
+                        label: Text(list.name),
+                        selected: list.id == activeId,
+                        onSelected: (_) => store.setActiveList(list.id),
+                        avatar: list.starred
+                            ? const Icon(Icons.star, size: 16)
+                            : null,
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ChoiceChip(
-                      label: Text(list.name),
-                      selected: list.id == activeId,
-                      onSelected: (_) => store.setActiveList(list.id),
-                      avatar: list.starred
-                          ? const Icon(Icons.star, size: 16)
-                          : null,
+                    child: ActionChip(
+                      avatar: const Icon(Icons.add),
+                      label: const Text('New list'),
+                      onPressed: () => _promptList(context),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ActionChip(
-                    avatar: const Icon(Icons.add),
-                    label: const Text('New list'),
-                    onPressed: () => _promptList(context),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          Expanded(
-            child: _TaskListView(
-              listId: activeId,
-              key: ValueKey(activeId ?? 'empty'),
-            ),
-          ),
+          if (activeId == null)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: _EmptyState(),
+            )
+          else
+            _TaskListView(listId: activeId, key: ValueKey(activeId)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -131,11 +136,17 @@ class _TaskListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<TaskStore>();
     if (listId == null) {
-      return const Center(child: Text('No list selected'));
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: _EmptyState(),
+      );
     }
     final tasks = store.tasksForList(listId!);
     if (tasks.isEmpty) {
-      return const _EmptyState();
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: _EmptyState(),
+      );
     }
     tasks.sort((a, b) {
       if (a.starred != b.starred) return b.starred ? 1 : -1;
@@ -144,13 +155,11 @@ class _TaskListView extends StatelessWidget {
       }
       return a.createdAt.compareTo(b.createdAt);
     });
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 100),
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
         final task = tasks[index];
         return TaskTile(task: task, onEdit: () => _openEditor(context, task));
-      },
+      }, childCount: tasks.length),
     );
   }
 

@@ -11,9 +11,9 @@ class SettingTileIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 48,
+      width: 40,
       height: double.infinity,
-      child: Icon(icon, size: 32),
+      child: Icon(icon, size: 30),
     );
   }
 }
