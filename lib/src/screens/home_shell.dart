@@ -180,7 +180,7 @@ class _TaskListView extends StatelessWidget {
           for (final sub in task.subtasks) {
             subTiles.add(
               Padding(
-                padding: const EdgeInsets.only(left: 12.0, bottom: 4),
+                padding: const EdgeInsets.only(left: 12.0, bottom: 8, top: 8),
                 child: Row(
                   children: [
                     Icon(
@@ -225,7 +225,7 @@ class _TaskListView extends StatelessWidget {
             description: task.description?.isNotEmpty == true
                 ? Text(task.description!)
                 : null,
-            trailing: const Icon(Icons.edit_outlined),
+            trailing: const Icon(Icons.star_border),
             onTap: () => _openEditor(context, task),
             subItems: subTiles,
             initiallyExpanded: true,

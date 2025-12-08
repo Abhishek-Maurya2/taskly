@@ -98,7 +98,7 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                 dense: true,
                 visualDensity: VisualDensity.compact,
                 title: Text(
-                  _expanded ? 'Hide subtasks' : 'Show subtasks',
+                  _expanded ? 'Hide details' : 'Show details',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 trailing:
@@ -111,20 +111,46 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                 child: _expanded
                     ? Padding(
                         padding: const EdgeInsets.only(
-                            left: 16, right: 16, bottom: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (widget.subItems.isNotEmpty) ...widget.subItems,
-                            if (chipWidgets.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 14,
-                                children: chipWidgets,
-                              ),
+                            left: 12, right: 12, bottom: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.subItems.isNotEmpty)
+                                ...widget.subItems.map(
+                                  (item) => Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surface,
+                                          width: 0.6,
+                                        ),
+                                      ),
+                                    ),
+                                    child: item,
+                                  ),
+                                ),
+                              if (chipWidgets.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: chipWidgets,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       )
                     : const SizedBox.shrink(),
