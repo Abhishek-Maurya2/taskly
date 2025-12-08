@@ -9,6 +9,7 @@ import '../utils/theme_controller.dart';
 import 'package:restart_app/restart_app.dart';
 import '../utils/snack_util.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppearanceScreen extends StatefulWidget {
   const AppearanceScreen({super.key});
@@ -38,12 +39,18 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('Appearance'),
+            title: Text(
+              'Appearance',
+              style: GoogleFonts.oswald(
+                textStyle: Theme.of(context).textTheme.headlineMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 24),
+              icon: const Icon(Icons.arrow_back, size: 20),
               tooltip: 'Back',
               onPressed: () {
                 HapticFeedback.selectionClick();
@@ -53,7 +60,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surfaceContainerHighest,
-                fixedSize: Size(20, 50),
+                minimumSize: Size(30, 40),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
               ),
             ),
           ),

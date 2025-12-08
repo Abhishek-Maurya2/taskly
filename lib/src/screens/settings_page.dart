@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../services/notification_service.dart';
+import '../services/update_service.dart';
 import 'appearance_screen.dart';
 import 'tab_management_page.dart';
 
@@ -14,6 +17,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _checkingUpdate = false;
+
   @override
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
@@ -22,12 +27,18 @@ class _SettingsPageState extends State<SettingsPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('Settings'),
+            title: Text(
+              'Settings',
+              style: GoogleFonts.oswald(
+                textStyle: Theme.of(context).textTheme.headlineMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             titleSpacing: 0,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 24),
+              icon: const Icon(Icons.arrow_back, size: 20),
               tooltip: 'Back',
               onPressed: () {
                 HapticFeedback.selectionClick();
@@ -37,7 +48,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surfaceContainerHighest,
-                fixedSize: Size(20, 50),
+                minimumSize: Size(30, 40),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
               ),
             ),
           ),
@@ -98,6 +111,39 @@ class _SettingsPageState extends State<SettingsPage> {
                 SizedBox(height: 10),
                 SettingSection(
                   styleTile: true,
+                  title: const SettingSectionTitle('Updates', noPadding: true),
+                  tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.system_update,
+                        isLight
+                            ? const Color(0xffd1f7ff)
+                            : const Color(0xff0a3b4d),
+                        isLight
+                            ? const Color(0xff0a3b4d)
+                            : const Color(0xffd1f7ff),
+                      ),
+                      title: const Text('Check for updates'),
+                      description: const Text(
+                        'Fetch latest APK from GitHub releases.',
+                      ),
+                      trailing: _checkingUpdate
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                      onTap: () {
+                        if (_checkingUpdate) return;
+                        _handleUpdateCheck();
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                SettingSection(
+                  styleTile: true,
                   title: const SettingSectionTitle(
                     'Notifications',
                     noPadding: true,
@@ -142,6 +188,71 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleUpdateCheck() async {
+    setState(() => _checkingUpdate = true);
+    try {
+      final info = await const UpdateService().checkForUpdate();
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) {
+          final hasUpdate = info.hasUpdate && info.downloadUrl.isNotEmpty;
+          return AlertDialog(
+            title: Text(
+              hasUpdate ? 'Update available' : 'Up to date',
+              style: GoogleFonts.oswald(
+                textStyle: Theme.of(context).textTheme.titleLarge,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Current: ${info.currentVersion}'),
+                Text('Latest: ${info.latestVersion}'),
+                const SizedBox(height: 12),
+                if (info.releaseNotes != null && info.releaseNotes!.isNotEmpty)
+                  SizedBox(
+                    height: 140,
+                    child: SingleChildScrollView(
+                      child: Text(info.releaseNotes!),
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+              if (hasUpdate)
+                FilledButton.icon(
+                  icon: const Icon(Icons.download),
+                  label: const Text('Open download'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _launchUrl(info.downloadUrl);
+                  },
+                ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Update check failed: $e')));
+    } finally {
+      if (mounted) setState(() => _checkingUpdate = false);
+    }
+  }
+
+  void _launchUrl(String url) {
+    launchUrlString(url, mode: LaunchMode.externalApplication);
   }
 }
 

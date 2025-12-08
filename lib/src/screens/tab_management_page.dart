@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../models/task_models.dart';
@@ -32,12 +33,18 @@ class _TabManagementPageState extends State<TabManagementPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('Manage tabs'),
+            title: Text(
+              'Manage tabs',
+              style: GoogleFonts.oswald(
+                textStyle: Theme.of(context).textTheme.headlineMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             centerTitle: false,
             backgroundColor: Theme.of(context).colorScheme.surface,
             scrolledUnderElevation: 1,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 24),
+              icon: const Icon(Icons.arrow_back, size: 20),
               tooltip: 'Back',
               onPressed: () {
                 HapticFeedback.selectionClick();
@@ -47,7 +54,9 @@ class _TabManagementPageState extends State<TabManagementPage> {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surfaceContainerHighest,
-                fixedSize: Size(20, 50),
+                minimumSize: Size(30, 40),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
               ),
             ),
           ),
