@@ -30,11 +30,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
 
     final colorTheme = Theme.of(context).colorScheme;
 
-    final optionsTheme = {
-      "Auto": "Auto",
-      "Dark": "Dark",
-      "Light": "Light",
-    };
+    final optionsTheme = {"Auto": "Auto", "Dark": "Dark", "Light": "Light"};
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -51,7 +47,10 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               children: [
                 SettingSection(
                   styleTile: true,
-                  title: const SettingSectionTitle('Appearance', noPadding: true),
+                  title: const SettingSectionTitle(
+                    'Appearance',
+                    noPadding: true,
+                  ),
                   tiles: [
                     SettingSingleOptionTile(
                       icon: Icon(Symbols.routine),
@@ -317,7 +316,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     SettingSwitchTile(
                       icon: Icon(Symbols.palette, fill: 1, weight: 500),
                       title: const Text("Material scheme only"),
-                      description: const Text('Force Material seed scheme even with palette'),
+                      description: const Text(
+                        'Force Material seed scheme even with palette',
+                      ),
                       toggled:
                           PreferencesHelper.getBool("OnlyMaterialScheme") ??
                           false,
