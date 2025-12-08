@@ -21,12 +21,16 @@ class HomeShell extends StatelessWidget {
 
     final activeId =
         store.activeListId ?? (lists.isNotEmpty ? lists.first.id : null);
+    final tabsLength = lists.length + 1; // +1 for Starred tab
     final initialIndex = activeId == null
-        ? 0
-        : lists.indexWhere((l) => l.id == activeId).clamp(0, lists.length - 1);
+        ? (tabsLength > 1 ? 1 : 0)
+        : (lists.indexWhere((l) => l.id == activeId) + 1).clamp(
+            0,
+            tabsLength - 1,
+          );
 
     return DefaultTabController(
-      length: lists.length,
+      length: tabsLength,
       initialIndex: initialIndex,
       child: Scaffold(
         body: NestedScrollView(
@@ -46,7 +50,7 @@ class HomeShell extends StatelessWidget {
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(52),
                   child: Container(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Colors.transparent,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       children: [
@@ -74,10 +78,13 @@ class HomeShell extends StatelessWidget {
                                 ?.copyWith(fontWeight: FontWeight.w600),
                             labelColor: Theme.of(context).colorScheme.primary,
                             tabs: [
+                              const Tab(text: 'Starred'),
                               for (final list in lists) Tab(text: list.name),
                             ],
-                            onTap: (index) =>
-                                store.setActiveList(lists[index].id),
+                            onTap: (index) {
+                              if (index == 0) return;
+                              store.setActiveList(lists[index - 1].id);
+                            },
                           ),
                         ),
                       ],
@@ -89,6 +96,7 @@ class HomeShell extends StatelessWidget {
           },
           body: TabBarView(
             children: [
+              const _StarredTaskListView(),
               for (final list in lists)
                 _TaskListView(listId: list.id, key: ValueKey(list.id)),
             ],
@@ -160,170 +168,8 @@ class _TaskListView extends StatelessWidget {
     if (tasks.isEmpty) {
       return const _EmptyState();
     }
-
-    List<TaskModel> sorted(List<TaskModel> items) {
-      final copy = [...items];
-      copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return copy;
-    }
-
-    final activeTasks = sorted(tasks.where((t) => !t.completed).toList());
-    final completedTasks = sorted(tasks.where((t) => t.completed).toList());
-
-    List<Widget> buildTaskTiles(
-      List<TaskModel> source, {
-      required bool completed,
-    }) {
-      final tiles = <Widget>[];
-      final colorScheme = Theme.of(context).colorScheme;
-
-      String dueLabel(DateTime date) {
-        final now = DateTime.now();
-        final today = DateTime(now.year, now.month, now.day);
-        final target = DateTime(date.year, date.month, date.day);
-        final diff = target.difference(today).inDays;
-        if (diff == 0) return 'Today';
-        if (diff == 1) return 'Tomorrow';
-        if (diff == -1) return 'Yesterday';
-        return '${date.month}/${date.day}';
-      }
-
-      for (final task in source) {
-        final subTiles = <Widget>[];
-        if (task.subtasks.isNotEmpty) {
-          for (final sub in task.subtasks) {
-            subTiles.add(
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 12.0,
-                  bottom: 12,
-                  top: 12,
-                  right: 12,
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () async {
-                    final updatedSub = sub.copyWith(completed: !sub.completed);
-                    final newSubtasks = task.subtasks
-                        .map((s) => s.id == sub.id ? updatedSub : s)
-                        .toList();
-                    final updatedTask = task.copyWith(
-                      subtasks: newSubtasks,
-                      updatedAt: DateTime.now(),
-                    );
-                    await store.updateTask(updatedTask);
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        sub.completed
-                            ? Icons.check
-                            : Icons.radio_button_unchecked,
-                        size: 24,
-                        color: sub.completed
-                            ? colorScheme.primary
-                            : colorScheme.outline,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          sub.title,
-                          style: TextStyle(
-                            decoration: sub.completed
-                                ? TextDecoration.lineThrough
-                                : null,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-        }
-
-        final chips = <Widget>[];
-        if (task.reminderAt != null) {
-          final time = TimeOfDay.fromDateTime(
-            task.reminderAt!.toLocal(),
-          ).format(context);
-          chips.add(
-            Chip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.alarm, size: 16),
-                  const SizedBox(width: 6),
-                  Text(time),
-                ],
-              ),
-            ),
-          );
-        }
-        if (task.dueAt != null) {
-          chips.add(
-            Chip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.schedule, size: 16),
-                  const SizedBox(width: 6),
-                  Text(dueLabel(task.dueAt!.toLocal())),
-                ],
-              ),
-            ),
-          );
-        }
-        if (task.attachments.isNotEmpty) {
-          final count = task.attachments.length;
-          chips.add(
-            Chip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.attach_file, size: 16),
-                  const SizedBox(width: 6),
-                  Text('Media $count'),
-                ],
-              ),
-            ),
-          );
-        }
-
-        tiles.add(
-          SettingExpandableListTile(
-            icon: InkResponse(
-              radius: 22,
-              onTap: () async => store.toggleCompletion(task),
-              child: Icon(
-                task.starred
-                    ? Icons.star
-                    : (!completed ? Icons.circle_outlined : Icons.check),
-                color: completed ? colorScheme.primary : colorScheme.onSurface,
-              ),
-            ),
-            title: Text(
-              task.title,
-              style: completed
-                  ? const TextStyle(decoration: TextDecoration.lineThrough)
-                  : null,
-            ),
-            description: task.description?.isNotEmpty == true
-                ? Text(task.description!)
-                : null,
-            trailing: const Icon(Icons.star_border),
-            onTap: () => _openEditor(context, task),
-            subItems: subTiles,
-            chips: chips,
-            initiallyExpanded: true,
-          ),
-        );
-      }
-
-      return tiles;
-    }
+    final activeTasks = _sorted(tasks.where((t) => !t.completed).toList());
+    final completedTasks = _sorted(tasks.where((t) => t.completed).toList());
 
     return ListView(
       padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
@@ -332,7 +178,12 @@ class _TaskListView extends StatelessWidget {
           SettingSection(
             styleTile: true,
             title: const SettingSectionTitle('Active tasks', noPadding: true),
-            tiles: buildTaskTiles(activeTasks, completed: false),
+            tiles: _buildTaskTiles(
+              context,
+              store,
+              activeTasks,
+              completed: false,
+            ),
           ),
         if (completedTasks.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -342,23 +193,243 @@ class _TaskListView extends StatelessWidget {
               'Completed tasks',
               noPadding: true,
             ),
-            tiles: buildTaskTiles(completedTasks, completed: true),
+            tiles: _buildTaskTiles(
+              context,
+              store,
+              completedTasks,
+              completed: true,
+            ),
           ),
         ],
         if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),
       ],
     );
   }
+}
 
-  void _openEditor(BuildContext context, TaskModel task) {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => TaskEditorSheet(existing: task),
+class _StarredTaskListView extends StatelessWidget {
+  const _StarredTaskListView();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<TaskStore>();
+    final allTasks = store.lists
+        .expand((list) => store.tasksForList(list.id))
+        .where((task) => task.starred)
+        .toList();
+
+    if (allTasks.isEmpty) {
+      return const _EmptyState();
+    }
+
+    final activeTasks = _sorted(allTasks.where((t) => !t.completed).toList());
+    final completedTasks = _sorted(allTasks.where((t) => t.completed).toList());
+
+    return ListView(
+      padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
+      children: [
+        if (activeTasks.isNotEmpty)
+          SettingSection(
+            styleTile: true,
+            title: const SettingSectionTitle('Starred tasks', noPadding: true),
+            tiles: _buildTaskTiles(
+              context,
+              store,
+              activeTasks,
+              completed: false,
+            ),
+          ),
+        if (completedTasks.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SettingSection(
+            styleTile: true,
+            title: const SettingSectionTitle(
+              'Completed starred tasks',
+              noPadding: true,
+            ),
+            tiles: _buildTaskTiles(
+              context,
+              store,
+              completedTasks,
+              completed: true,
+            ),
+          ),
+        ],
+        if (activeTasks.isEmpty && completedTasks.isEmpty) const _EmptyState(),
+      ],
     );
   }
+}
+
+List<TaskModel> _sorted(List<TaskModel> items) {
+  final copy = [...items];
+  copy.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return copy;
+}
+
+String _dueLabel(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final target = DateTime(date.year, date.month, date.day);
+  final diff = target.difference(today).inDays;
+  if (diff == 0) return 'Today';
+  if (diff == 1) return 'Tomorrow';
+  if (diff == -1) return 'Yesterday';
+  return '${date.month}/${date.day}';
+}
+
+Future<void> _openTaskEditor(BuildContext context, TaskModel task) {
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => TaskEditorSheet(existing: task),
+  );
+}
+
+List<Widget> _buildTaskTiles(
+  BuildContext context,
+  TaskStore store,
+  List<TaskModel> source, {
+  required bool completed,
+}) {
+  final tiles = <Widget>[];
+  final colorScheme = Theme.of(context).colorScheme;
+
+  for (final task in source) {
+    final subTiles = <Widget>[];
+    if (task.subtasks.isNotEmpty) {
+      for (final sub in task.subtasks) {
+        subTiles.add(
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 12.0,
+              bottom: 12,
+              top: 12,
+              right: 12,
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                final updatedSub = sub.copyWith(completed: !sub.completed);
+                final newSubtasks = task.subtasks
+                    .map((s) => s.id == sub.id ? updatedSub : s)
+                    .toList();
+                final updatedTask = task.copyWith(
+                  subtasks: newSubtasks,
+                  updatedAt: DateTime.now(),
+                );
+                await store.updateTask(updatedTask);
+              },
+              child: Row(
+                children: [
+                  Icon(
+                    sub.completed ? Icons.check : Icons.radio_button_unchecked,
+                    size: 24,
+                    color: sub.completed
+                        ? colorScheme.primary
+                        : colorScheme.outline,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      sub.title,
+                      style: TextStyle(
+                        decoration: sub.completed
+                            ? TextDecoration.lineThrough
+                            : null,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    final chips = <Widget>[];
+    if (task.reminderAt != null) {
+      final time = TimeOfDay.fromDateTime(
+        task.reminderAt!.toLocal(),
+      ).format(context);
+      chips.add(
+        Chip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.alarm, size: 16),
+              const SizedBox(width: 6),
+              Text(time),
+            ],
+          ),
+        ),
+      );
+    }
+    if (task.dueAt != null) {
+      chips.add(
+        Chip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.schedule, size: 16),
+              const SizedBox(width: 6),
+              Text(_dueLabel(task.dueAt!.toLocal())),
+            ],
+          ),
+        ),
+      );
+    }
+    if (task.attachments.isNotEmpty) {
+      final count = task.attachments.length;
+      chips.add(
+        Chip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.attach_file, size: 16),
+              const SizedBox(width: 6),
+              Text('Media $count'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    tiles.add(
+      SettingExpandableListTile(
+        icon: InkResponse(
+          radius: 22,
+          onTap: () async => store.toggleCompletion(task),
+          child: Icon(
+            !completed ? Icons.circle_outlined : Icons.check,
+            color: completed ? colorScheme.primary : colorScheme.onSurface,
+          ),
+        ),
+        title: Text(
+          task.title,
+          style: completed
+              ? const TextStyle(decoration: TextDecoration.lineThrough)
+              : null,
+        ),
+        description: task.description?.isNotEmpty == true
+            ? Text(task.description!)
+            : null,
+        trailing: task.starred
+            ? const Icon(Icons.star)
+            : const Icon(Icons.star_border),
+        onTap: () => _openTaskEditor(context, task),
+        subItems: subTiles,
+        chips: chips,
+        initiallyExpanded: true,
+      ),
+    );
+  }
+
+  return tiles;
 }
 
 class _EmptyState extends StatelessWidget {
