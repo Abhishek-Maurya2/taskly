@@ -86,7 +86,10 @@ class SettingsPage extends StatelessWidget {
               children: [
                 SettingSection(
                   styleTile: true,
-                  title: const SettingSectionTitle('Appearance', noPadding: true),
+                  title: const SettingSectionTitle(
+                    'Appearance',
+                    noPadding: true,
+                  ),
                   tiles: [
                     SettingSingleOptionTile(
                       icon: const SettingTileIcon(Icons.brightness_6_outlined),
@@ -136,7 +139,9 @@ class SettingsPage extends StatelessWidget {
                     SettingSwitchTile(
                       icon: const SettingTileIcon(Icons.star_rounded),
                       title: const Text('Star active list'),
-                      description: const Text('Mark the current list as a favorite.'),
+                      description: const Text(
+                        'Mark the current list as a favorite.',
+                      ),
                       toggled: activeList?.starred ?? false,
                       enabled: activeList != null,
                       onChanged: (value) {
@@ -149,10 +154,15 @@ class SettingsPage extends StatelessWidget {
                 ),
                 SettingSection(
                   styleTile: true,
-                  title: const SettingSectionTitle('Notifications', noPadding: true),
+                  title: const SettingSectionTitle(
+                    'Notifications',
+                    noPadding: true,
+                  ),
                   tiles: [
                     SettingActionTile(
-                      icon: const SettingTileIcon(Icons.notifications_active_outlined),
+                      icon: const SettingTileIcon(
+                        Icons.notifications_active_outlined,
+                      ),
                       title: const Text('Clear scheduled notifications'),
                       description: const Text('Cancel all pending reminders.'),
                       trailing: const Icon(Icons.delete_outline),
@@ -167,7 +177,9 @@ class SettingsPage extends StatelessWidget {
                     SettingTextTile(
                       icon: SettingTileIcon(Icons.info_outline),
                       title: Text('Expressive layout'),
-                      description: Text('Settings now use Material 3 styled tiles.'),
+                      description: Text(
+                        'Settings now use Material 3 styled tiles.',
+                      ),
                     ),
                   ],
                 ),
