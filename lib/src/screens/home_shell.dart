@@ -33,9 +33,7 @@ class HomeShell extends StatelessWidget {
           headerSliverBuilder: (context, _) {
             return [
               SliverAppBar.large(
-                titleSpacing: 0,
                 backgroundColor: Theme.of(context).colorScheme.surface,
-                scrolledUnderElevation: 1,
                 title: const Text('Tasks'),
                 actions: [
                   IconButton(
@@ -51,7 +49,6 @@ class HomeShell extends StatelessWidget {
                 delegate: _TabBarDelegate(
                   child: Container(
                     color: Theme.of(context).colorScheme.surface,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
                       children: [
                         Expanded(
@@ -59,23 +56,31 @@ class HomeShell extends StatelessWidget {
                             isScrollable: true,
                             labelStyle: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.w600),
+                            labelColor: Theme.of(context).colorScheme.primary,
                             tabs: [
-                              for (final list in lists)
-                                Tab(
-                                  icon: list.starred
-                                      ? const Icon(Icons.star, size: 16)
-                                      : null,
-                                  text: list.name,
-                                ),
+                              for (final list in lists) Tab(text: list.name),
                             ],
                             onTap: (index) =>
                                 store.setActiveList(lists[index].id),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          tooltip: 'New list',
-                          onPressed: () => _promptList(context),
+                        Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.add),
+                            tooltip: 'New list',
+                            onPressed: () => _promptList(context),
+                          ),
                         ),
                       ],
                     ),
@@ -179,10 +184,10 @@ class _TaskListView extends StatelessWidget {
         final today = DateTime(now.year, now.month, now.day);
         final target = DateTime(date.year, date.month, date.day);
         final diff = target.difference(today).inDays;
-        if (diff == 0) return 'Due today';
-        if (diff == 1) return 'Due tomorrow';
-        if (diff == -1) return 'Due yesterday';
-        return 'Due ${date.month}/${date.day}';
+        if (diff == 0) return 'Today';
+        if (diff == 1) return 'Tomorrow';
+        if (diff == -1) return 'Yesterday';
+        return '${date.month}/${date.day}';
       }
 
       for (final task in source) {
@@ -241,18 +246,52 @@ class _TaskListView extends StatelessWidget {
           }
         }
 
-        final chips = <String>[];
+        final chips = <Widget>[];
         if (task.reminderAt != null) {
-          final time = TimeOfDay.fromDateTime(task.reminderAt!.toLocal())
-              .format(context);
-          chips.add('Reminder $time');
+          final time = TimeOfDay.fromDateTime(
+            task.reminderAt!.toLocal(),
+          ).format(context);
+          chips.add(
+            Chip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.alarm, size: 16),
+                  const SizedBox(width: 6),
+                  Text(time),
+                ],
+              ),
+            ),
+          );
         }
         if (task.dueAt != null) {
-          chips.add(dueLabel(task.dueAt!.toLocal()));
+          chips.add(
+            Chip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.schedule, size: 16),
+                  const SizedBox(width: 6),
+                  Text(dueLabel(task.dueAt!.toLocal())),
+                ],
+              ),
+            ),
+          );
         }
         if (task.attachments.isNotEmpty) {
           final count = task.attachments.length;
-          chips.add('Media $count');
+          chips.add(
+            Chip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.attach_file, size: 16),
+                  const SizedBox(width: 6),
+                  Text('Media $count'),
+                ],
+              ),
+            ),
+          );
         }
 
         tiles.add(
@@ -289,7 +328,7 @@ class _TaskListView extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.only(left: 2, right: 2, top: 14, bottom: 100),
       children: [
         if (activeTasks.isNotEmpty)
           SettingSection(

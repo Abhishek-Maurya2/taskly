@@ -28,7 +28,7 @@ class SettingExpandableListTile extends StatefulWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final List<Widget> subItems;
-  final List<String>? chips;
+  final List<Widget>? chips;
   final bool initiallyExpanded;
 
   @override
@@ -50,8 +50,7 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
   Widget build(BuildContext context) {
     if (!widget.visible) return const SizedBox.shrink();
 
-    final hasSubContent =
-        widget.subItems.isNotEmpty || (widget.chips?.isNotEmpty ?? false);
+    final hasSubContent = widget.subItems.isNotEmpty;
     final trailingWidgets = <Widget>[];
     if (widget.trailing != null) trailingWidgets.add(widget.trailing!);
     if (hasSubContent) {
@@ -59,14 +58,29 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
       //     .add(Icon(_expanded ? Icons.expand_less : Icons.expand_more));
     }
 
-    final subtitleNeeded = widget.value != null || widget.description != null;
-    final subtitle = subtitleNeeded
+    final chipWidgets = widget.chips ?? const <Widget>[];
+
+    final subtitleParts = <Widget>[];
+    if (widget.value != null) subtitleParts.add(widget.value!);
+    if (widget.description != null) {
+      subtitleParts.add(_styledText(widget.description!));
+    }
+    if (chipWidgets.isNotEmpty) {
+      if (subtitleParts.isNotEmpty)
+        subtitleParts.add(const SizedBox(height: 8));
+      subtitleParts.add(
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: chipWidgets,
+        ),
+      );
+    }
+
+    final subtitle = subtitleParts.isNotEmpty
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.value != null) widget.value!,
-              if (widget.description != null) _styledText(widget.description!),
-            ],
+            children: subtitleParts,
           )
         : null;
 
@@ -87,10 +101,6 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
       onTap: widget.onTap,
     );
 
-    final chipWidgets = (widget.chips ?? <String>[])
-        .map((label) => Chip(label: Text(label)))
-        .toList();
-
     final expandedChild = hasSubContent
         ? Column(
             children: [
@@ -108,9 +118,9 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                     borderRadius: BorderRadius.circular(18),
                   ),
                   padding: const EdgeInsets.only(
-                      top: 4, bottom: 4, left: 8, right: 8),
-                  child:
-                      Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                      top: 2, bottom: 2, left: 6, right: 6),
+                  child: Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 22),
                 ),
                 onTap: () => setState(() => _expanded = !_expanded),
               ),
@@ -146,18 +156,6 @@ class _SettingExpandableListTileState extends State<SettingExpandableListTile>
                                     child: item,
                                   ),
                                 ),
-                              if (chipWidgets.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  child: Wrap(
-                                    spacing: 8,
-                                    runSpacing: 4,
-                                    children: chipWidgets,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
