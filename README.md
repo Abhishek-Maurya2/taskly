@@ -25,5 +25,5 @@ flutter run -d android  # android device/emulator
 ```
 
 ## Notes
-- Notifications require platform support/permissions; on web they are UI-only.
+- Notifications require platform support/permissions; on web they are UI only.
 - Supabase sync is planned; current build is fully local.
