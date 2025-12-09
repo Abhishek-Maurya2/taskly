@@ -31,7 +31,7 @@ Future<void> main() async {
   debugPrint('Widget Launch URI: $widgetUri');
 
   if (widgetUri != null) {
-    debugPrint('Widget URI Hosts: ${widgetUri.host}');
+    debugPrint('Widget URI Host: ${widgetUri.host}');
     if (widgetUri.host == 'opentask') {
       initialRoute = AppRoutes.addTask;
       debugPrint('Setting initial route to: addTask');
