@@ -47,6 +47,7 @@ class HomeShell extends StatelessWidget {
                     textStyle: Theme.of(context).textTheme.headlineLarge,
                     fontWeight: FontWeight.w600,
                     fontSize: 40,
+                    height: 1,
                   ),
                 ),
                 actions: [

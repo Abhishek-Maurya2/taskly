@@ -46,12 +46,19 @@ class TaskStore extends ChangeNotifier {
     } else {
       _activeListId = _lists.first.id;
     }
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> setActiveList(String listId) async {
     _activeListId = listId;
     notifyListeners();
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> addList(String name, {bool starred = false}) async {
@@ -62,14 +69,20 @@ class TaskStore extends ChangeNotifier {
     await _persist();
     notifyListeners();
     // Widget usually displays tasks, but we update to be safe if logic depends on lists
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> updateList(TaskListModel list) async {
     _lists = _lists.map((l) => l.id == list.id ? list : l).toList();
     await _persist();
     notifyListeners();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> deleteList(String id) async {
@@ -80,7 +93,10 @@ class TaskStore extends ChangeNotifier {
     }
     await _persist();
     notifyListeners();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> addTask({
@@ -110,7 +126,10 @@ class TaskStore extends ChangeNotifier {
     await _persist();
     await _schedule(task);
     notifyListeners();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> updateTask(TaskModel task) async {
@@ -118,7 +137,10 @@ class TaskStore extends ChangeNotifier {
     await _persist();
     await _schedule(task);
     notifyListeners();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> deleteTask(String taskId) async {
@@ -126,7 +148,10 @@ class TaskStore extends ChangeNotifier {
     await _persist();
     await NotificationService.instance.cancel(taskId.hashCode);
     notifyListeners();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
   }
 
   Future<void> toggleCompletion(TaskModel task) async {
@@ -153,7 +178,10 @@ class TaskStore extends ChangeNotifier {
     _lists = await _repository.loadLists();
     _lists = await _repository.loadLists();
     _tasks = await _repository.loadTasks();
-    await WidgetService.updateWidget(_tasks, listName: activeList?.name);
+    await WidgetService.updateWidget(
+      tasksForActive,
+      listName: activeList?.name,
+    );
     if (_lists.isEmpty) {
       _activeListId = null;
     } else if (_activeListId == null ||

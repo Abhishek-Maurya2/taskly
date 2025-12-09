@@ -9,8 +9,16 @@ import 'utils/theme_controller.dart';
 import 'package:home_widget/home_widget.dart';
 import 'screens/widget_action_handler.dart';
 
+class AppRoutes {
+  static const String home = '/';
+  static const String addTask = '/add-task';
+  static const String selectList = '/select-list';
+}
+
 class TasklyApp extends StatefulWidget {
-  const TasklyApp({super.key});
+  final String initialRoute;
+
+  const TasklyApp({super.key, this.initialRoute = AppRoutes.home});
 
   @override
   State<TasklyApp> createState() => _TasklyAppState();
@@ -22,27 +30,55 @@ class _TasklyAppState extends State<TasklyApp> {
   @override
   void initState() {
     super.initState();
-    _checkForWidgetLaunch();
-    HomeWidget.widgetClicked.listen(_launchedFromWidget);
+    // Handle widget clicks when app is already running
+    HomeWidget.widgetClicked.listen(_handleWidgetClick);
   }
 
-  void _checkForWidgetLaunch() {
-    HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
+  void _handleWidgetClick(Uri? uri) {
+    if (uri == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = _navigatorKey.currentState;
+      if (navigator == null) return;
+
+      if (uri.host == 'opentask') {
+        navigator.pushNamed(AppRoutes.addTask);
+      } else if (uri.host == 'openlists') {
+        navigator.push(
+          PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (_, __, ___) =>
+                const WidgetActionHandler(action: 'openlists'),
+          ),
+        );
+      }
+    });
   }
 
-  void _launchedFromWidget(Uri? uri) {
-    if (uri?.host == 'openlists') {
-      _navigatorKey.currentState?.push(
-        PageRouteBuilder(
-          opaque: false, // Transparent background
+  Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.home:
+        return MaterialPageRoute(
+          builder: (_) => const HomeShell(),
+          settings: settings,
+        );
+      case AppRoutes.addTask:
+        return MaterialPageRoute(
+          builder: (_) => const TaskEditorScreen(),
+          settings: settings,
+        );
+      case AppRoutes.selectList:
+        return PageRouteBuilder(
+          opaque: false,
+          settings: settings,
           pageBuilder: (_, __, ___) =>
               const WidgetActionHandler(action: 'openlists'),
-        ),
-      );
-    } else if (uri?.host == 'opentask') {
-      _navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
-      );
+        );
+      default:
+        return MaterialPageRoute(
+          builder: (_) => const HomeShell(),
+          settings: settings,
+        );
     }
   }
 
@@ -80,7 +116,8 @@ class _TasklyAppState extends State<TasklyApp> {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeController.themeMode,
-      home: const HomeShell(),
+      initialRoute: widget.initialRoute,
+      onGenerateRoute: _onGenerateRoute,
     );
   }
 }
