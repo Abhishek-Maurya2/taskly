@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:home_widget/home_widget.dart';
 import '../models/task_models.dart';
@@ -9,6 +10,8 @@ class WidgetService {
     List<TaskModel> tasks, {
     String? listName,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+
     // Filter for active tasks (not completed)
     final activeTasks = tasks.where((t) => !t.completed).toList();
 
