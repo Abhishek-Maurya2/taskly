@@ -48,3 +48,8 @@ app.*.map.json
 temp
 # Supabase Secrets
 .env
+
+# Android Secrets
+/android/key.properties
+/android/app/*.jks
+/android/keystore_base64.txt
