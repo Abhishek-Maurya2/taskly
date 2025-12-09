@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 
@@ -494,66 +495,50 @@ class _PullToRefresh extends StatefulWidget {
 }
 
 class _PullToRefreshState extends State<_PullToRefresh> {
-  bool _refreshing = false;
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.topCenter,
-      children: [
-        RefreshIndicator(
-          color: Colors.transparent,
-          backgroundColor: Colors.transparent,
-          strokeWidth: 0.0001,
-          onRefresh: () async {
-            setState(() => _refreshing = true);
-            try {
-              await widget.onRefresh();
-            } finally {
-              if (mounted) setState(() => _refreshing = false);
-            }
-          },
-          child: widget.child,
-        ),
-        IgnorePointer(
-          child: AnimatedOpacity(
-            opacity: _refreshing ? 1 : 0,
-            duration: const Duration(milliseconds: 150),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.surface.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).shadowColor.withValues(alpha: 0.18),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: ExpressiveLoadingIndicator(
-                    color: Theme.of(context).colorScheme.primary,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                      maxWidth: 28,
-                      maxHeight: 28,
-                    ),
-                  ),
-                ),
-              ),
+    final colorTheme = Theme.of(context).colorScheme;
+
+    return CustomRefreshIndicator(
+      onRefresh: widget.onRefresh,
+      builder: (context, child, controller) {
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            child,
+            AnimatedBuilder(
+              animation: controller,
+              builder: (_, __) {
+                final val = controller.value.clamp(0.0, 1.0);
+                final isVisible = val > 0.0;
+
+                return isVisible
+                    ? Positioned(
+                        top: -30 + 120 * val,
+                        child: Opacity(
+                          opacity: val,
+                          child: RepaintBoundary(
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: colorTheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: ExpressiveLoadingIndicator(
+                                color: colorTheme.primary,
+                                activeSize: 36,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              },
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
+      child: widget.child,
     );
   }
 }
