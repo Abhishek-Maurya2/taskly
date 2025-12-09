@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,9 @@ class _TasklyAppState extends State<TasklyApp> {
   void initState() {
     super.initState();
     // Handle widget clicks when app is already running
-    HomeWidget.widgetClicked.listen(_handleWidgetClick);
+    if (Platform.isAndroid || Platform.isIOS) {
+      HomeWidget.widgetClicked.listen(_handleWidgetClick);
+    }
   }
 
   void _handleWidgetClick(Uri? uri) {
