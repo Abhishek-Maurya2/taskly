@@ -42,7 +42,7 @@ class TaskStore extends ChangeNotifier {
       );
       _lists = [defaultList];
       _activeListId = defaultList.id;
-      await _persist();
+      await _repository.addList(defaultList);
     } else {
       _activeListId = _lists.first.id;
     }
@@ -65,8 +65,7 @@ class TaskStore extends ChangeNotifier {
     final list = TaskListModel(id: _uuid.v4(), name: name, starred: starred);
     _lists = [..._lists, list];
     _activeListId = list.id;
-    await _persist();
-    await _persist();
+    await _repository.addList(list);
     notifyListeners();
     // Widget usually displays tasks, but we update to be safe if logic depends on lists
     await WidgetService.updateWidget(
@@ -77,7 +76,7 @@ class TaskStore extends ChangeNotifier {
 
   Future<void> updateList(TaskListModel list) async {
     _lists = _lists.map((l) => l.id == list.id ? list : l).toList();
-    await _persist();
+    await _repository.updateList(list);
     notifyListeners();
     await WidgetService.updateWidget(
       tasksForActive,
@@ -91,7 +90,7 @@ class TaskStore extends ChangeNotifier {
     if (_activeListId == id && _lists.isNotEmpty) {
       _activeListId = _lists.first.id;
     }
-    await _persist();
+    await _repository.deleteList(id);
     notifyListeners();
     await WidgetService.updateWidget(
       tasksForActive,
@@ -123,7 +122,7 @@ class TaskStore extends ChangeNotifier {
       updatedAt: now,
     );
     _tasks = [..._tasks, task];
-    await _persist();
+    await _repository.addTask(task);
     await _schedule(task);
     notifyListeners();
     await WidgetService.updateWidget(
@@ -134,7 +133,7 @@ class TaskStore extends ChangeNotifier {
 
   Future<void> updateTask(TaskModel task) async {
     _tasks = _tasks.map((t) => t.id == task.id ? task : t).toList();
-    await _persist();
+    await _repository.updateTask(task);
     await _schedule(task);
     notifyListeners();
     await WidgetService.updateWidget(
@@ -145,7 +144,7 @@ class TaskStore extends ChangeNotifier {
 
   Future<void> deleteTask(String taskId) async {
     _tasks = _tasks.where((t) => t.id != taskId).toList();
-    await _persist();
+    await _repository.deleteTask(taskId);
     await NotificationService.instance.cancel(taskId.hashCode);
     notifyListeners();
     await WidgetService.updateWidget(
