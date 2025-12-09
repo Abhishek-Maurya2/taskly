@@ -8,6 +8,7 @@ import '../services/notification_service.dart';
 import '../services/update_service.dart';
 import 'appearance_screen.dart';
 import 'tab_management_page.dart';
+import 'widget_preview_screen.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -76,6 +77,30 @@ class _SettingsPageState extends State<SettingsPage> {
                         );
                       },
                     ),
+                      SettingSection(
+                        styleTile: true,
+                        title: const SettingSectionTitle(
+                          'Widgets',
+                          noPadding: true,
+                        ),
+                        tiles: [
+                          SettingActionTile(
+                            icon: iconContainer(
+                              Symbols.widgets,
+                              isLight ? const Color(0xffe5f2ff) : const Color(0xff0c2e4a),
+                              isLight ? const Color(0xff0c2e4a) : const Color(0xffe5f2ff),
+                            ),
+                            title: const Text('Customize widgets'),
+                            description: const Text('Preview and adjust home widget style.'),
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const WidgetPreviewScreen(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
                   ],
                 ),
                 SizedBox(height: 10),
