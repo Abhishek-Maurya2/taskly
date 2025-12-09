@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'src/app.dart';
 import 'src/data/local_task_repository.dart';
 import 'src/notifiers/unit_settings_notifier.dart';
@@ -12,6 +13,13 @@ import 'src/utils/theme_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://xyjpapmzaakxhrhyugfu.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5anBhcG16YWFreGhyaHl1Z2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNzY3MDIsImV4cCI6MjA4MDg1MjcwMn0.mD3n8E594e4mxAQfvVd_MUCdxF4v7QRPVCdW4CLbv4c',
+  );
+
   await NotificationService.instance.initialize();
   await PreferencesHelper.init();
 

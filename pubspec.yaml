@@ -58,6 +58,7 @@ dependencies:
     path: expressive_loading_indicator_modified
   home_widget: ^0.8.1
   custom_refresh_indicator: ^4.0.1
+  supabase_flutter: ^2.10.3
 
 dev_dependencies:
   flutter_test:
