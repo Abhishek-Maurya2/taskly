@@ -77,30 +77,33 @@ class _SettingsPageState extends State<SettingsPage> {
                         );
                       },
                     ),
-                      SettingSection(
-                        styleTile: true,
-                        title: const SettingSectionTitle(
-                          'Widgets',
-                          noPadding: true,
-                        ),
-                        tiles: [
-                          SettingActionTile(
-                            icon: iconContainer(
-                              Symbols.widgets,
-                              isLight ? const Color(0xffe5f2ff) : const Color(0xff0c2e4a),
-                              isLight ? const Color(0xff0c2e4a) : const Color(0xffe5f2ff),
-                            ),
-                            title: const Text('Customize widgets'),
-                            description: const Text('Preview and adjust home widget style.'),
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const WidgetPreviewScreen(),
-                              ),
-                            ),
-                          ),
-                        ],
+                  ],
+                ),
+                SizedBox(height: 10),
+                SettingSection(
+                  styleTile: true,
+                  title: const SettingSectionTitle('Widgets', noPadding: true),
+                  tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.widgets,
+                        isLight
+                            ? const Color(0xffe5f2ff)
+                            : const Color(0xff0c2e4a),
+                        isLight
+                            ? const Color(0xff0c2e4a)
+                            : const Color(0xffe5f2ff),
                       ),
-                      SizedBox(height: 10),
+                      title: const Text('Customize widgets'),
+                      description: const Text(
+                        'Preview and adjust home widget style.',
+                      ),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const WidgetPreviewScreen(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 10),

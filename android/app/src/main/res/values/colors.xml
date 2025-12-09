@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background">#F0F4FC</color> <!-- Surface Container (Cool Blue Tint) -->
+    <color name="widget_primary">#415F91</color> <!-- M3 Blue -->
+    <color name="widget_on_primary">#FFFFFF</color>
+    <color name="widget_text_primary">#191C20</color>
+    <color name="widget_text_secondary">#44474E</color>
+    <color name="widget_outline">#74777F</color>
+</resources>

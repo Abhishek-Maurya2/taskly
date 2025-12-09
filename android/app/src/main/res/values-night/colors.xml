@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background">#111318</color> <!-- Surface Container (Dark) -->
+    <color name="widget_primary">#AAC7FF</color> <!-- Pastel Blue -->
+    <color name="widget_on_primary">#0A305F</color>
+    <color name="widget_text_primary">#E2E2E9</color>
+    <color name="widget_text_secondary">#C4C6D0</color>
+    <color name="widget_outline">#8E9099</color>
+</resources>
