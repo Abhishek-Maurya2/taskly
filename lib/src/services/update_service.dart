@@ -27,7 +27,7 @@ class UpdateService {
 
   Future<UpdateInfo> checkForUpdate() async {
     final packageInfo = await PackageInfo.fromPlatform();
-    final current = packageInfo.version;
+    final current = '${packageInfo.version}+${packageInfo.buildNumber}';
 
     final uri = Uri.https(
       'api.github.com',
@@ -72,16 +72,25 @@ class UpdateService {
 
   bool _isNewer(String latest, String current) {
     if (latest.isEmpty) return false;
-    final latestParts = latest.split('+').first.split('.');
-    final currentParts = current.split('+').first.split('.');
+    final latestParts = latest.split('+');
+    final currentParts = current.split('+');
+
+    final latestVer = latestParts.first.split('.');
+    final currentVer = currentParts.first.split('.');
+
     for (var i = 0; i < 3; i++) {
-      final l = i < latestParts.length ? int.tryParse(latestParts[i]) ?? 0 : 0;
-      final c = i < currentParts.length
-          ? int.tryParse(currentParts[i]) ?? 0
-          : 0;
+      final l = i < latestVer.length ? int.tryParse(latestVer[i]) ?? 0 : 0;
+      final c = i < currentVer.length ? int.tryParse(currentVer[i]) ?? 0 : 0;
       if (l > c) return true;
       if (l < c) return false;
     }
+
+    if (latestParts.length > 1 && currentParts.length > 1) {
+      final lBuild = int.tryParse(latestParts[1]) ?? 0;
+      final cBuild = int.tryParse(currentParts[1]) ?? 0;
+      if (lBuild > cBuild) return true;
+    }
+
     return false;
   }
 }
