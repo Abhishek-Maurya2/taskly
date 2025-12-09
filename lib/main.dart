@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
@@ -27,17 +28,20 @@ Future<void> main() async {
   // Determine initial route based on widget launch
   String initialRoute = AppRoutes.home;
 
-  final widgetUri = await HomeWidget.initiallyLaunchedFromHomeWidget();
-  debugPrint('Widget Launch URI: $widgetUri');
+  Uri? widgetUri;
+  if (Platform.isAndroid || Platform.isIOS) {
+    widgetUri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    debugPrint('Widget Launch URI: $widgetUri');
 
-  if (widgetUri != null) {
-    debugPrint('Widget URI Host: ${widgetUri.host}');
-    if (widgetUri.host == 'opentask') {
-      initialRoute = AppRoutes.addTask;
-      debugPrint('Setting initial route to: addTask');
-    } else if (widgetUri.host == 'openlists') {
-      initialRoute = AppRoutes.selectList;
-      debugPrint('Setting initial route to: selectList');
+    if (widgetUri != null) {
+      debugPrint('Widget URI Host: ${widgetUri.host}');
+      if (widgetUri.host == 'opentask') {
+        initialRoute = AppRoutes.addTask;
+        debugPrint('Setting initial route to: addTask');
+      } else if (widgetUri.host == 'openlists') {
+        initialRoute = AppRoutes.selectList;
+        debugPrint('Setting initial route to: selectList');
+      }
     }
   }
 
